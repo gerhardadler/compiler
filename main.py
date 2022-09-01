@@ -1,12 +1,14 @@
+import re
+
 from expression import Expression
 
 code = """
-uint x = 3
+uint x = 3;
 
-x = 2
+x = 2;
 
 if x == 3 {
-    x = 4
+    x = 4;
 }
 """
 
