@@ -1,11 +1,8 @@
 class Expression:
     def __init__(self, infix_expression):
-        self.infix_expression = infix_expression
+        self.__infix_expression = infix_expression
         self.postfix_expression = self.create_postfix_from_infix()
-
-
-    def __repr__(self):
-        return str(self.postfix_expression)
+        self.postfix_short()
 
 
     def create_postfix_from_infix(self):
@@ -14,7 +11,7 @@ class Expression:
         # https://en.wikipedia.org/wiki/Order_of_operations#Programming_languages
         output = []
         operators = []
-        for token in self.infix_expression:
+        for token in self.__infix_expression:
             if "operator" in token["type"]: # if token is operator
                 for operator in reversed(operators):
                     if (token["associativity"] == "right_to_left") and (token["precedence"] > operator["precedence"]):
@@ -45,24 +42,26 @@ class Expression:
         return output
 
 
-    def short(self):
+    def postfix_short(self):
         while True: # While self.postfix_expression keeps getting updated by for loop
             for index, token in enumerate(self.postfix_expression):
-                if token in ["+", "-", "*", "/"]:
+                if token["type"] in ["arithmetic_operator", "comparison_operator"]:
                     operator = self.postfix_expression[index]
-                    right = str(self.postfix_expression[index - 1])
-                    left = str(self.postfix_expression[index - 2])
-                    if is_str_float(left) and is_str_float(right):
+                    left = self.postfix_expression[index - 2]
+                    right = self.postfix_expression[index - 1]
+                    if left["type"] == "number" and right["type"] == "number":
                         del self.postfix_expression[index - 2:index + 1]
-                        self.postfix_expression.insert(index - 2, eval(left + operator + right))
-                        print(self.postfix_expression)
+                        self.postfix_expression.insert(index - 2, {
+                            "symbol": int(eval(str(left["symbol"]) + operator["symbol"] + str(right["symbol"]))),
+                            "type": "number"
+                        })
                         break
             else:
                 break
 
 
     def to_assembly(self):
-        self.short()
+        self.postfix_short()
         data = []
         bss = []
         text = []
