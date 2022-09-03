@@ -2,6 +2,8 @@ class Expression:
     def __init__(self, infix_expression):
         self.__infix_expression = infix_expression
         self.postfix_expression = self.create_postfix_from_infix()
+        for token in self.postfix_expression:
+            print(token["symbol"], end=" ")
         self.postfix_short()
 
 
@@ -14,18 +16,20 @@ class Expression:
         for token in self.__infix_expression:
             if "operator" in token["type"]: # if token is operator
                 for operator in reversed(operators):
-                    if (token["associativity"] == "right_to_left") and (token["precedence"] > operator["precedence"]):
+                    if operator["symbol"] == "(":
+                        break
+                    elif (token["associativity"] == "right_to_left") and (token["precedence"] > operator["precedence"]):
                         output.append(operators.pop(-1))
                     elif (token["precedence"] >= operator["precedence"]):
                         output.append(operators.pop(-1))
                     else:
                         break
                 operators.append(token)
-            elif token == "(":
+            elif token["symbol"] == "(":
                 operators.append(token)
-            elif token == ")":
+            elif token["symbol"] == ")":
                 for operator in reversed(operators):
-                    if operator == "(":
+                    if operator["symbol"] == "(":
                         operators.pop(-1)
                         break
                     else:
@@ -45,71 +49,69 @@ class Expression:
     def postfix_short(self):
         while True: # While self.postfix_expression keeps getting updated by for loop
             for index, token in enumerate(self.postfix_expression):
-                if token["type"] in ["arithmetic_operator", "comparison_operator"]:
+                if token["type"] in ["arithmetic_operator", "comparison_operator", "bitwise_operator", "logical_operator"]:
                     operator = self.postfix_expression[index]
                     left = self.postfix_expression[index - 2]
                     right = self.postfix_expression[index - 1]
                     if left["type"] == "number" and right["type"] == "number":
                         del self.postfix_expression[index - 2:index + 1]
-                        self.postfix_expression.insert(index - 2, {
-                            "symbol": int(eval(str(left["symbol"]) + operator["symbol"] + str(right["symbol"]))),
-                            "type": "number"
-                        })
+                        if operator["symbol"] == "&&":
+                            self.postfix_expression.insert(index - 2, {
+                                "symbol": int(left == 1 and right == 1),
+                                "type": "number"
+                            })
+                        elif operator["symbol"] == "||":
+                            self.postfix_expression.insert(index - 2, {
+                                "symbol": int(left == 1 or right == 1),
+                                "type": "number"
+                            })
+                        else:
+                            self.postfix_expression.insert(index - 2, {
+                                "symbol": int(eval(str(left["symbol"]) + operator["symbol"] + str(right["symbol"]))),
+                                "type": "number"
+                            })
                         break
             else:
                 break
 
 
     def to_assembly(self):
-        self.postfix_short()
+        expression = self.postfix_expression
         data = []
         bss = []
         text = []
-        # Short self.postfix_expression
-        while True: # While self.postfix_expression keeps getting updated by for loop
-            for index, token in enumerate(self.postfix_expression):
-                if token in ["+", "-", "*", "/"]:
-                    operator = self.postfix_expression[index]
-                    right = str(self.postfix_expression[index - 1])
-                    left = str(self.postfix_expression[index - 2])
-                    if is_str_float(left) and is_str_float(right):
-                        del self.postfix_expression[index - 2:index + 1]
-                        self.postfix_expression.insert(index - 2, eval(left + operator + right))
-                        print(self.postfix_expression)
-                        break
-            else:
-                break
+
         # self.postfix_expression to assembly
         unused_registers = ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]
         while True: # While there still are operators in self.postfix_expression
-            for index, token in enumerate(self.postfix_expression):
-                if token in self.operator_lookup:
+            for index, token in enumerate(expression):
+                if token["type"] in ["arithmetic_operator", "assignment_operator"]:
                     break
             else: # If no more operators
                 break
-            operator = self.postfix_expression.pop(index)
-            right = str(self.postfix_expression.pop(index - 1))
-            left = str(self.postfix_expression.pop(index - 2))
+            operator = expression.pop(index)
+            right = expression.pop(index - 1)
+            left = expression.pop(index - 2)
 
-            if operator in ["=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>="]:
-                text.append(f"mov {left}, {right}")
+            if operator["type"] == "assignment_operator":
+                text.append(f"mov {left['symbol']}, {right['symbol']}")
                 break
 
-            if left not in ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]:
+            if left["symbol"] not in ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]:
                 left_register = unused_registers.pop()
-                text.append(f"mov {left_register}, {left}")
-                left = left_register
+                text.append(f"mov {left_register}, {left['symbol']}")
+                left["symbol"] = left_register
                 
-            if (not is_str_float(right)) and (right not in ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]):
+            if (right["type"] != "number") and (right not in ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]):
                 right_register = unused_registers.pop()
-                text.append(f"mov {right_register}, {right}")
-                right = right_register
+                text.append(f"mov {right_register}, {right['symbol']}")
+                right["symbol"] = right_register
             
-            text.append(f"{self.operator_lookup[operator]} {left}, {right}")
+            text.append(f"{operator['assembly']} {left['symbol']}, {right['symbol']}")
 
-            if right in ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]:
-                unused_registers.append(right)
+            if right['symbol'] in ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]:
+                unused_registers.append(right['symbol'])
 
-            self.postfix_expression.insert(index - 2, left)
+            expression.insert(index - 2, left)
 
-            return (data, bss, text)
+        return (data, bss, text)

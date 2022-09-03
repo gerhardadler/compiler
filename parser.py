@@ -11,8 +11,10 @@ def parser(tokens):
             elif stack[0]["type"] == "type_declaration":
                 if stack[1]["type"] != "variable_name":
                     exit("syntax error")
-                if stack[2]["type"] != "assignment_operator":
+                if stack[2]["symbol"] != "=":
                     exit("syntax error")
+                if stack[3]["type"] != "number":
+                    exit("syntax_error")
 
                 eval(current_scope).append({
                     "type": "variable_declaration",

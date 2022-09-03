@@ -1,4 +1,15 @@
 symbols = [
+    # logical operators
+    {"symbol": "&&", "type": "logical_operator", "precedence": 10,  "associativity": "left_to_right"},
+    {"symbol": "||", "type": "logical_operator", "precedence": 11,  "associativity": "left_to_right"},
+
+    # bitwise operators
+    {"symbol": "<<", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "assembly": "shl"},
+    {"symbol": ">>", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "assembly": "shr"},
+    {"symbol": "&", "type": "bitwise_operator", "precedence": 7,  "associativity": "left_to_right", "assembly": "and"},
+    {"symbol": "^", "type": "bitwise_operator", "precedence": 8,  "associativity": "left_to_right", "assembly": "xor"},
+    {"symbol": "|", "type": "bitwise_operator", "precedence": 9,  "associativity": "left_to_right", "assembly": "or"},
+
     # comparison operators
     {"symbol": "==", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "assembly": "cmp"},
     {"symbol": "!=", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "assembly": "cmp"},
@@ -92,5 +103,4 @@ def lexer(code):
 
         code_index += 1
     
-    # code = re.sub("\s+", " ", code)
     return output_tokens
