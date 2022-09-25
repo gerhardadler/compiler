@@ -34,7 +34,7 @@ class Expression:
                         break
                     else:
                         output.append(operators.pop(-1))
-                else:
+                else: # nobreak
                     print("unmatching parentheses")
             else:
                 output.append(token)
@@ -71,8 +71,8 @@ class Expression:
                                 "type": "number"
                             })
                         break
-            else:
-                break
+            else: # nobreak
+                break # breaks outer while loop
 
 
     def to_assembly(self):
@@ -87,7 +87,7 @@ class Expression:
             for index, token in enumerate(expression):
                 if token["type"] in ["arithmetic_operator", "assignment_operator"]:
                     break
-            else: # If no more operators
+            else: # nobreak if no more operators
                 break
             operator = expression.pop(index)
             right = expression.pop(index - 1)

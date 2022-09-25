@@ -6,7 +6,7 @@ from parser import parser
 from compiler import compiler
 
 code = """
-uint x = 2 + 3 - 1 * (2 + 3) | 3 << 4;
+uint x = 2 + 3 - 1 * (2 + 3) || 3 << 4;
 """
 
 lexed_code = lexer(code)

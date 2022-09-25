@@ -81,13 +81,13 @@ def lexer(code):
                 output_tokens.append(symbol)
                 code_index += len(symbol["symbol"]) - 1 # subtracting 1, as 1 is added later.
                 break
-        else:
+        else: # nobreak
             for keyword in keywords:
                 if current_word == keyword["symbol"]:
                     output_tokens.append(keyword)
                     code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
                     break
-            else:
+            else: # nobreak
                 if is_str_number(current_word):
                     output_tokens.append({
                         "symbol": current_word,
