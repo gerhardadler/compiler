@@ -7,6 +7,12 @@ from compiler import compiler
 
 code = """
 uint x = 2 + 3 - 1 * (2 + 3) || 3 << 4;
+
+x = 3 - y;
+
+def function (x, y) {
+    x = 3;
+}
 """
 
 lexed_code = lexer(code)

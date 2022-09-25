@@ -32,8 +32,8 @@ symbols = [
     {"symbol": "-", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "assembly": "sub"},
 
     # seperators
-    {"symbol": ",", "type": "seperator"},
-    {"symbol": ";", "type": "seperator"},
+    {"symbol": ",", "type": "comma"},
+    {"symbol": ";", "type": "semicolon"},
 
     # brackets
     {"symbol": "(", "type": "bracket"},
@@ -42,13 +42,13 @@ symbols = [
     {"symbol": "}", "type": "curly_bracket"},
     {"symbol": "[", "type": "bracket"},
     {"symbol": "]", "type": "bracket"},
-]
 
-keywords = [
     # type declaration
     {"symbol": "uint", "type": "type_declaration"},
     
-    {"symbol": "if", "type": "keyword"}
+    {"symbol": "if", "type": "if"},
+    {"symbol": "elif", "type": "elif"},
+    {"symbol": "def", "type": "function"}
 ]
 
 def is_str_number(str):
@@ -82,24 +82,18 @@ def lexer(code):
                 code_index += len(symbol["symbol"]) - 1 # subtracting 1, as 1 is added later.
                 break
         else: # nobreak
-            for keyword in keywords:
-                if current_word == keyword["symbol"]:
-                    output_tokens.append(keyword)
-                    code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
-                    break
-            else: # nobreak
-                if is_str_number(current_word):
-                    output_tokens.append({
-                        "symbol": current_word,
-                        "type": "number"
-                    })
-                    code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
-                else:
-                    output_tokens.append({
-                        "symbol": current_word,
-                        "type": "variable_name"
-                    })
-                    code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
+            if is_str_number(current_word):
+                output_tokens.append({
+                    "symbol": current_word,
+                    "type": "number"
+                })
+                code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
+            else:
+                output_tokens.append({
+                    "symbol": current_word,
+                    "type": "variable_name"
+                })
+                code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
 
         code_index += 1
     

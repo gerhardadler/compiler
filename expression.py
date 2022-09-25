@@ -114,4 +114,8 @@ class Expression:
 
             expression.insert(index - 2, left)
 
-        return (data, bss, text)
+        return {
+            "data": data,
+            "bss": bss,
+            "text": text
+        }
