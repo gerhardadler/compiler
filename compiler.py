@@ -9,12 +9,12 @@ def compiler(syntax_tree):
             # TODO: not make it only dd.
             data.append(f"{variable_name} dd {value}")
         elif node["type"] == "variable_assignment":
-            text.append(node["expression"].to_assembly()["text"])
+            text += node["expression"].to_assembly()["text"]
         elif node["type"] == "function":
             text.append(node["name"] + ":")
             text.append("push rbp")
             text.append("mov rbp, rsp")
-            text.append(compiler(node["body"])["text"])
+            text += compiler(node["body"])["text"]
 
             text.append("mov rsp, rbp")
             text.append("pop rbp")

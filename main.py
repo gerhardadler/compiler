@@ -6,12 +6,8 @@ from parser import parser
 from compiler import compiler
 
 code = """
-uint x = 2 + 3 - 1 * (2 + 3) || 3 << 4;
-
-x = 3 - y;
-
-def function (x, y) {
-    x = 3;
+def main (x, y) {
+    uint x = 2 + 3 - 1 * (2 + 3) || 3 << 4;
 }
 """
 
