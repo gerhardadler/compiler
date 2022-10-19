@@ -2,7 +2,8 @@ def compiler(syntax_tree, header=True):
     data = []
     bss = []
     text = []
-    text += ["section .text", "global _start", "_start:", "call main", "mov rax, 60", "mov rdi, 0", "syscall"]
+    if header == True:
+        text += ["section .text", "global _start", "_start:", "call main", "mov rax, 60", "mov rdi, 0", "syscall"]
 
     for node in syntax_tree:
         if node["type"] == "variable_declaration":

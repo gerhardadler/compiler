@@ -91,9 +91,11 @@ class Expression:
         data = []
         bss = []
         text = []
+        # TODO Not only 32-bit
+        registers = ["r15d", "r14d", "r13d", "r12d", "r11d", "r10d", "r9d", "r8d", "edi", "esi", "ecx", "ebx", "eax"]
+        unused_registers = registers
 
         # self.postfix_expression to assembly
-        unused_registers = ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]
         while True: # While there still are operators in self.postfix_expression
             for index, token in enumerate(expression):
                 if token["type"] in ["arithmetic_operator", "assignment_operator"]:
@@ -108,19 +110,19 @@ class Expression:
                 text.append(f"mov {left['symbol']}, {right['symbol']}")
                 break
 
-            if left["symbol"] not in ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]:
+            if left["symbol"] not in registers:
                 left_register = unused_registers.pop()
                 text.append(f"mov {left_register}, {left['symbol']}")
                 left["symbol"] = left_register
                 
-            if (right["type"] != "number") and (right not in ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]):
+            if (right["type"] != "number") and (right not in registers):
                 right_register = unused_registers.pop()
                 text.append(f"mov {right_register}, {right['symbol']}")
                 right["symbol"] = right_register
             
             text.append(f"{operator['assembly']} {left['symbol']}, {right['symbol']}")
 
-            if right['symbol'] in ["r15", "r14", "r13", "r12", "r11", "r10", "r9", "r8", "rdi", "rsi", "rcx", "rbx", "rax"]:
+            if right['symbol'] in registers:
                 unused_registers.append(right['symbol'])
 
             expression.insert(index - 2, left)
