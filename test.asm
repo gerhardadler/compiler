@@ -10,16 +10,13 @@ _start:
 main:
     push rbp
     mov rbp, rsp
-    mov dword [rbp-4], 0a214945h
-    mov dword [rbp-8], 66
-
-    mov rax, 1
-    mov rdi, 1
-    mov rsi, rbp
-    sub rsi, 4
-    mov rdx, 4
-    syscall
-
+    mov dword [rbp-4], 3
+    mov dword [rbp-8], 2
+    mov eax, dword [rbp-8]
+    add eax, 4
+    mov ebx, dword [rbp-4]
+    sub eax, ebx
+    mov dword [rbp-4], eax
     mov rsp, rbp
     pop rbp
     ret

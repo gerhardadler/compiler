@@ -9,11 +9,8 @@ code = """
 def main() {
     uint x = 3;
     uint y = 2;
-}
 
-def dmain() {
-    uint x = 6;
-    uint y = 5;
+    x = y + 4 - x + 2;
 }
 """
 

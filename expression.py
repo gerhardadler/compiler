@@ -1,10 +1,22 @@
 class Expression:
-    def __init__(self, infix_expression):
-        self.__infix_expression = infix_expression
+    def __init__(self, infix_expression, scope_variables):
+        self.infix_expression = infix_expression
+        self.scope_variables = scope_variables
+
+        self.replace_variable_names_with_rbp_diff()
+
         self.postfix_expression = self.create_postfix_from_infix()
         for token in self.postfix_expression:
             print(token["symbol"], end=" ")
         self.postfix_short()
+
+
+    def replace_variable_names_with_rbp_diff(self):
+        for token in self.infix_expression:
+            if token["type"] == "variable_name":
+                for scope_variable in self.scope_variables:
+                    if token["symbol"] == scope_variable["name"]:
+                        token["symbol"] = f"dword [rbp{scope_variable['rbp_diff']}]"
 
 
     def create_postfix_from_infix(self):
@@ -13,7 +25,7 @@ class Expression:
         # https://en.wikipedia.org/wiki/Order_of_operations#Programming_languages
         output = []
         operators = []
-        for token in self.__infix_expression:
+        for token in self.infix_expression:
             if "operator" in token["type"]: # if token is operator
                 for operator in reversed(operators):
                     if operator["symbol"] == "(":
@@ -73,7 +85,6 @@ class Expression:
                         break
             else: # nobreak
                 break # breaks outer while loop
-
 
     def to_assembly(self):
         expression = self.postfix_expression
