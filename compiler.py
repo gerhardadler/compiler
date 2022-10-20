@@ -22,6 +22,8 @@ def compiler(syntax_tree, header=True):
             text.append("mov rsp, rbp")
             text.append("pop rbp")
             text.append("ret")
+        elif node["type"] == "function_name":
+            text.append("call " + node["name"])
     
     return {
         "data": data,

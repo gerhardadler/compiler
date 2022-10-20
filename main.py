@@ -11,15 +11,19 @@ def main() {
     uint y = 2;
 
     x = y + 4 - x + 2;
+
+    bean(var, b, 3);
+
 }
 """
 
 lexed_code = lexer(code)
+print(*lexed_code, sep="\n")
 syntax_tree = parser(lexed_code)
-print(syntax_tree)
+# print(syntax_tree)
 
 # ugly way to print syntax tree, but just for testing
-# print(json.dumps(jsons.dump(syntax_tree, strip_privates=True), indent=2))
+print(json.dumps(jsons.dump(syntax_tree, strip_privates=True), indent=2))
 
 assembly = compiler(syntax_tree)
 

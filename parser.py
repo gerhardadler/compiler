@@ -50,6 +50,25 @@ def parser(tokens):
                 })
                 scope_variables = []
                 current_block += '[-1]["body"]'
+            elif stack[0]["type"] == "function_name":
+                function_name = stack.pop(0)["symbol"]
+                arguments = []
+                for node in stack:
+                    if node["type"] == "comma":
+                        continue
+                    elif node["symbol"] == "(":
+                        continue
+                    elif node["symbol"] == ")":
+                        break
+                    else:
+                        arguments.append(node)
+                else: # if no ending bracket
+                    exit("syntax error")
+                eval("syntax_tree " + current_block).append({
+                    "type": "function_name",
+                    "name": function_name,
+                    "arguments": arguments
+                })
             elif stack[0]["type"] == "if":
                 eval("syntax_tree " + current_block).append({
                     "type": "if",

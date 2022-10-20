@@ -89,10 +89,16 @@ def lexer(code):
                 })
                 code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
             else:
-                output_tokens.append({
+                if code[first_seperator_index] == "(":
+                    output_tokens.append({
                     "symbol": current_word,
-                    "type": "variable_name"
+                    "type": "function_name"
                 })
+                else:
+                    output_tokens.append({
+                        "symbol": current_word,
+                        "type": "variable_name"
+                    })
                 code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
 
         code_index += 1

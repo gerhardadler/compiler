@@ -114,7 +114,7 @@ class Expression:
                 left_register = unused_registers.pop()
                 text.append(f"mov {left_register}, {left['symbol']}")
                 left["symbol"] = left_register
-                
+
             if (right["type"] != "number") and (right not in registers):
                 right_register = unused_registers.pop()
                 text.append(f"mov {right_register}, {right['symbol']}")
