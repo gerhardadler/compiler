@@ -92,7 +92,7 @@ class Expression:
         bss = []
         text = []
         # TODO Not only 32-bit
-        registers = ["r15d", "r14d", "r13d", "r12d", "r11d", "r10d", "r9d", "r8d", "edi", "esi", "ecx", "ebx", "eax"]
+        registers = ["r15d", "r14d", "r13d", "r12d", "r11d", "ecx", "ebx"]
         unused_registers = registers
 
         # self.postfix_expression to assembly

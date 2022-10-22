@@ -23,7 +23,12 @@ def compiler(syntax_tree, header=True):
             text.append("pop rbp")
             text.append("ret")
         elif node["type"] == "function_name":
+            for argument in node["arguments"]:
+                text.append("sub rsp, 4")
+                text.append(f"mov rsp, {argument}")
             text.append("call " + node["name"])
+            for argument in node["arguments"]:
+                text.append("add rsp, 4")
     
     return {
         "data": data,

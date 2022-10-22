@@ -6,15 +6,16 @@ from parser import parser
 from compiler import compiler
 
 code = """
-def main() {
+def main(uint a, uint b) {
     uint x = 3;
     uint y = 2;
 
-    x = y + 4 - x + 2;
+    x = y + 4 - x + 2 + a;
 
     bean(var, b, 3);
-
 }
+
+
 """
 
 lexed_code = lexer(code)
