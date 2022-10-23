@@ -14,18 +14,19 @@ def parse_variable_declaration():
     global stack
     if stack[1]["type"] != "variable_name":
         exit("syntax error")
-    if stack[2]["symbol"] != "=":
+    if stack[2]["name"] != "=":
         exit("syntax error")
     if stack[3]["type"] not in ["number", "variable_name"]:
         exit("syntax_error")
 
-    variable_type = stack.pop(0)["symbol"]
-    variable_name = stack[0]["symbol"]
+    variable_type = stack.pop(0)["name"]
+    variable_name = stack[0]["name"]
 
     inner_scope_variables.append({
+        "type": "variable_name",
         "name": variable_name,
         "size": 32,
-        "rbp_diff": f"-{(len(inner_scope_variables) + 1) * 4}"
+        "rbp_diff": -(len(inner_scope_variables) + 1) * 4
     })
 
     eval("syntax_tree " + current_block).append({
@@ -55,31 +56,34 @@ def parse_function_declaration():
     global current_block
     global stack
     stack.pop(0) # gets rid of function definer
-    function_name = stack.pop(0)["symbol"]
+    function_name = stack.pop(0)["name"]
 
     current_type = ""
     for node in stack:
         if node["type"] == "comma":
             continue
-        elif node["symbol"] == "(":
+        elif node["name"] == "(":
             continue
-        elif node["symbol"] == ")":
+        elif node["name"] == ")":
             break
         elif node["type"] == "type_declaration":
             if not current_type:
-                current_type = node["symbol"]
+                current_type = node["name"]
             else:
                 exit("syntax error")
         elif node["type"] == "variable_name":
             if current_type:
                 outer_scope_variables.append({
-                    "name": node["symbol"],
+                    "type": "variable_name",
+                    "name": node["name"],
                     "size": 32,
-                    "rbp_diff": f"+{(len(outer_scope_variables) + 1) * 4}"
+                    "rbp_diff": (len(outer_scope_variables) + 1) * 4
                 })
                 current_type = ""
             else:
                 exit("syntax error")
+        else:
+            exit("syntax error")
 
     eval("syntax_tree " + current_block).append({
         "type": "function",
@@ -94,22 +98,54 @@ def parse_function_call():
     global syntax_tree
     global current_block
     global stack
-    function_name = stack.pop(0)["symbol"]
+    function_name = stack.pop(0)["name"]
     arguments = []
     for node in stack:
         if node["type"] == "comma":
             continue
-        elif node["symbol"] == "(":
+        elif node["name"] == "(":
             continue
-        elif node["symbol"] == ")":
+        elif node["name"] == ")":
             break
         else:
-            arguments.append(node["symbol"])
+            arguments.append(node["name"])
     else: # if no ending bracket
         exit("syntax error")
     eval("syntax_tree " + current_block).append({
         "type": "function_name",
         "name": function_name,
+        "arguments": arguments
+    })
+
+def parse_syscall():
+    global syntax_tree
+    global current_block
+    global stack
+    stack.pop(0) # gets rid of the syscall keyword
+    arguments = []
+    for node in stack:
+        if node["type"] == "comma":
+            continue
+        elif node["name"] == "(":
+            continue
+        elif node["name"] == ")":
+            break
+        elif node["type"] == "variable_name":
+            scope_variables = inner_scope_variables + outer_scope_variables
+            for variable in scope_variables:
+                if variable["name"] == node["name"]:
+                    arguments.append(variable)
+                    break
+            else:
+                exit("syntax error")
+        elif node["type"] == "number":
+            arguments.append(node)
+        else:
+            exit("syntax error")
+    else: # if no ending bracket
+        exit("syntax error")
+    eval("syntax_tree " + current_block).append({
+        "type": "syscall",
         "arguments": arguments
     })
 
@@ -134,7 +170,7 @@ def parser(tokens):
     global stack
     for token in tokens:
         if token["type"] in ["semicolon", "curly_bracket"]:
-            if token["symbol"] == "}":
+            if token["name"] == "}":
                 current_block = current_block[0:-12]
             elif stack[0]["type"] == "type_declaration":
                 parse_variable_declaration()
@@ -144,6 +180,8 @@ def parser(tokens):
                 parse_function_declaration()
             elif stack[0]["type"] == "function_name":
                 parse_function_call()
+            elif stack[0]["type"] == "syscall":
+                parse_syscall()
             elif stack[0]["type"] == "if":
                 parse_if()
             stack = []

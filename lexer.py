@@ -1,54 +1,56 @@
-symbols = [
+names = [
     # logical operators
-    {"symbol": "&&", "type": "logical_operator", "precedence": 10,  "associativity": "left_to_right"},
-    {"symbol": "||", "type": "logical_operator", "precedence": 11,  "associativity": "left_to_right"},
+    {"name": "&&", "type": "logical_operator", "precedence": 10,  "associativity": "left_to_right"},
+    {"name": "||", "type": "logical_operator", "precedence": 11,  "associativity": "left_to_right"},
 
     # bitwise operators
-    {"symbol": "<<", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "assembly": "shl"},
-    {"symbol": ">>", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "assembly": "shr"},
-    {"symbol": "&", "type": "bitwise_operator", "precedence": 7,  "associativity": "left_to_right", "assembly": "and"},
-    {"symbol": "^", "type": "bitwise_operator", "precedence": 8,  "associativity": "left_to_right", "assembly": "xor"},
-    {"symbol": "|", "type": "bitwise_operator", "precedence": 9,  "associativity": "left_to_right", "assembly": "or"},
+    {"name": "<<", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "assembly": "shl"},
+    {"name": ">>", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "assembly": "shr"},
+    {"name": "&", "type": "bitwise_operator", "precedence": 7,  "associativity": "left_to_right", "assembly": "and"},
+    {"name": "^", "type": "bitwise_operator", "precedence": 8,  "associativity": "left_to_right", "assembly": "xor"},
+    {"name": "|", "type": "bitwise_operator", "precedence": 9,  "associativity": "left_to_right", "assembly": "or"},
 
     # comparison operators
-    {"symbol": "==", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "assembly": "cmp"},
-    {"symbol": "!=", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "assembly": "cmp"},
-    {"symbol": "<", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
-    {"symbol": ">", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
-    {"symbol": "<=", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
-    {"symbol": ">=", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
+    {"name": "==", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "assembly": "cmp"},
+    {"name": "!=", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "assembly": "cmp"},
+    {"name": "<", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
+    {"name": ">", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
+    {"name": "<=", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
+    {"name": ">=", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
 
     # assignment operators
-    {"symbol": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "mov"},
-    {"symbol": "+=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "add"},
-    {"symbol": "-=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "sub"},
-    {"symbol": "*=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "mul"},
-    {"symbol": "/=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "div"},
+    {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "mov"},
+    {"name": "+=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "add"},
+    {"name": "-=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "sub"},
+    {"name": "*=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "mul"},
+    {"name": "/=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "div"},
 
     # arithmetic operators
-    {"symbol": "*", "type": "arithmetic_operator", "precedence": 2,  "associativity": "left_to_right", "assembly": "mul"},
-    {"symbol": "/", "type": "arithmetic_operator", "precedence": 2,  "associativity": "left_to_right", "assembly": "div"},
-    {"symbol": "+", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "assembly": "add"},
-    {"symbol": "-", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "assembly": "sub"},
+    {"name": "*", "type": "arithmetic_operator", "precedence": 2,  "associativity": "left_to_right", "assembly": "mul"},
+    {"name": "/", "type": "arithmetic_operator", "precedence": 2,  "associativity": "left_to_right", "assembly": "div"},
+    {"name": "+", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "assembly": "add"},
+    {"name": "-", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "assembly": "sub"},
 
     # seperators
-    {"symbol": ",", "type": "comma"},
-    {"symbol": ";", "type": "semicolon"},
+    {"name": ",", "type": "comma"},
+    {"name": ";", "type": "semicolon"},
 
     # brackets
-    {"symbol": "(", "type": "bracket"},
-    {"symbol": ")", "type": "bracket"},
-    {"symbol": "{", "type": "curly_bracket"},
-    {"symbol": "}", "type": "curly_bracket"},
-    {"symbol": "[", "type": "bracket"},
-    {"symbol": "]", "type": "bracket"},
+    {"name": "(", "type": "bracket"},
+    {"name": ")", "type": "bracket"},
+    {"name": "{", "type": "curly_bracket"},
+    {"name": "}", "type": "curly_bracket"},
+    {"name": "[", "type": "bracket"},
+    {"name": "]", "type": "bracket"},
 
     # type declaration
-    {"symbol": "uint", "type": "type_declaration"},
+    {"name": "uint", "type": "type_declaration"},
     
-    {"symbol": "if", "type": "if"},
-    {"symbol": "elif", "type": "elif"},
-    {"symbol": "def", "type": "function"}
+    {"name": "if", "type": "if"},
+    {"name": "elif", "type": "elif"},
+    {"name": "def", "type": "function"},
+
+    {"name": "syscall", "type": "syscall"}
 ]
 
 def is_str_number(str):
@@ -66,7 +68,7 @@ def lexer(code):
 
     while code_index < len(code):
         first_seperator_index = -1 # if there is no more seperators, -1 will be used.
-        for seperator in [dict["symbol"] for dict in symbols] + [" "]:
+        for seperator in [dict["name"] for dict in names] + [" "]:
             seperator_index = code.find(seperator, code_index)
             if first_seperator_index == -1 or (seperator_index < first_seperator_index and seperator_index != -1):
                 first_seperator_index = seperator_index
@@ -76,27 +78,27 @@ def lexer(code):
         if code[code_index] == " ":
             code_index += 1
             continue
-        for symbol in symbols:
-            if code.startswith(symbol["symbol"], code_index):
-                output_tokens.append(symbol)
-                code_index += len(symbol["symbol"]) - 1 # subtracting 1, as 1 is added later.
+        for name in names:
+            if code.startswith(name["name"], code_index):
+                output_tokens.append(name)
+                code_index += len(name["name"]) - 1 # subtracting 1, as 1 is added later.
                 break
         else: # nobreak
             if is_str_number(current_word):
                 output_tokens.append({
-                    "symbol": current_word,
+                    "name": current_word,
                     "type": "number"
                 })
                 code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
             else:
                 if code[first_seperator_index] == "(":
                     output_tokens.append({
-                    "symbol": current_word,
+                    "name": current_word,
                     "type": "function_name"
                 })
                 else:
                     output_tokens.append({
-                        "symbol": current_word,
+                        "name": current_word,
                         "type": "variable_name"
                     })
                 code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.

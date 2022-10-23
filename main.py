@@ -6,13 +6,15 @@ from parser import parser
 from compiler import compiler
 
 code = """
-def main(uint a, uint b) {
-    uint x = 3;
-    uint y = 2;
+def main() {
+    uint x = 65;
+    uint y = 1;
+    x = x + y;
+    print(x);
+}
 
-    x = y + 4 - x + 2 + a;
-
-    bean(var, b, 3);
+def print(uint a) {
+    syscall(1, 1, a, 1);
 }
 
 
