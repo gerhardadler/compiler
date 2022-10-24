@@ -1,10 +1,34 @@
 from expression import Expression
+from variable import Variable
 
 syntax_tree = []
 outer_scope_variables = [] # arguments
 inner_scope_variables = [] # local variables
 current_block = ""
 stack = []
+
+def stack_add_variable_info():
+    for stack_index, node in enumerate(stack):
+        if node["type"] == "variable_name":
+            for scope_variable in inner_scope_variables + outer_scope_variables:
+                if node["name"] == scope_variable["name"]:
+                    stack[stack_index] = scope_variable
+
+def inner_scope_rbp_diff():
+    global inner_scope_variables
+    rbp_diff = 0
+    for variable in inner_scope_variables:
+        rbp_diff += variable["size"]
+    rbp_diff //= 8
+    return -rbp_diff
+
+def outer_scope_rbp_diff():
+    global outer_scope_variables
+    rbp_diff = 0
+    for variable in outer_scope_variables:
+        rbp_diff += variable["size"]
+    rbp_diff //= 8
+    return rbp_diff
 
 def parse_variable_declaration():
     global syntax_tree
@@ -19,20 +43,17 @@ def parse_variable_declaration():
     if stack[3]["type"] not in ["number", "variable_name"]:
         exit("syntax_error")
 
-    variable_type = stack.pop(0)["name"]
+    variable_type = stack.pop(0)
     variable_name = stack[0]["name"]
 
-    inner_scope_variables.append({
-        "type": "variable_name",
-        "name": variable_name,
-        "size": 32,
-        "rbp_diff": -(len(inner_scope_variables) + 1) * 4
-    })
+    inner_scope_variables.append(Variable(variable_type, variable_name, inner_scope_rbp_diff()))
+
+    stack_add_variable_info()
 
     eval("syntax_tree " + current_block).append({
         "type": "variable_declaration",
-        "variable_type": variable_type,
-        "expression": Expression(stack, inner_scope_variables + outer_scope_variables)
+        "variable": Variable(variable_type, variable_name, inner_scope_rbp_diff()),
+        "expression": Expression(stack)
     })
 
 def parse_variable_reference():
@@ -44,9 +65,11 @@ def parse_variable_reference():
     if stack[1]["type"] != "assignment_operator":
         exit("syntax error")
 
+    stack_add_variable_info()
+
     eval("syntax_tree " + current_block).append({
         "type": "variable_assignment",
-        "expression": Expression(stack, inner_scope_variables + outer_scope_variables)
+        "expression": Expression(stack)
     })
 
 def parse_function_declaration():
@@ -68,17 +91,12 @@ def parse_function_declaration():
             break
         elif node["type"] == "type_declaration":
             if not current_type:
-                current_type = node["name"]
+                current_type = node
             else:
                 exit("syntax error")
         elif node["type"] == "variable_name":
             if current_type:
-                outer_scope_variables.append({
-                    "type": "variable_name",
-                    "name": node["name"],
-                    "size": 32,
-                    "rbp_diff": (len(outer_scope_variables)) * 4
-                })
+                outer_scope_variables.append(Variable(current_type, node, outer_scope_rbp_diff()))
                 current_type = ""
             else:
                 exit("syntax error")
@@ -167,9 +185,12 @@ def parse_if():
     global inner_scope_variables
     global current_block
     global stack
+
+    stack_add_variable_info()
+
     eval("syntax_tree " + current_block).append({
         "type": "if",
-        "expression": Expression(stack, inner_scope_variables + outer_scope_variables),
+        "expression": Expression(stack),
         "body": []
     })
     current_block += '[-1]["body"]'

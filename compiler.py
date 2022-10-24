@@ -1,3 +1,5 @@
+from variable import Variable
+
 def compiler(syntax_tree, header=True):
     data = []
     bss = []
@@ -26,18 +28,14 @@ def compiler(syntax_tree, header=True):
             for argument in node["arguments"]:
                 if argument["type"] == "variable_name":
                     if argument["rbp_diff"] >= 0:
-                        text.append(f"add rbp, {argument['rbp_diff']}")
-                        text.append(f"mov eax, dword [rbp]")
-                        text.append(f"sub rbp, {argument['rbp_diff']}")
+                        variable_operation_to_assembly("mov", argument, "eax", 2)
                         text.append(f"sub rbp, {abs(argument['argument_rbp_diff'])}")
-                        text.append(f"mov dword [rbp], eax")
+                        text.append(f"mov {size_to_specifier(argument['size'])} [rbp], eax")
                         text.append(f"add rbp, {abs(argument['argument_rbp_diff'])}")
                     else:
-                        text.append(f"sub rbp, {abs(argument['rbp_diff'])}")
-                        text.append(f"mov eax, dword [rbp]")
-                        text.append(f"add rbp, {abs(argument['rbp_diff'])}")
+                        variable_operation_to_assembly("mov", argument, "eax", 2)
                         text.append(f"sub rbp, {abs(argument['argument_rbp_diff'])}")
-                        text.append(f"mov dword [rbp], eax")
+                        text.append(f"mov {size_to_specifier(argument['size'])} [rbp], eax")
                         text.append(f"add rbp, {abs(argument['argument_rbp_diff'])}")
                 elif argument["type"] == "number":
                     text.append(f"mov [rbp], {argument[1]['name']}")

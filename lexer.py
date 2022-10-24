@@ -44,7 +44,10 @@ names = [
     {"name": "]", "type": "bracket"},
 
     # type declaration
-    {"name": "uint", "type": "type_declaration"},
+    {"name": "uint8", "type": "type_declaration", "size": 8},
+    {"name": "uint16", "type": "type_declaration", "size": 16},
+    {"name": "uint32", "type": "type_declaration", "size": 32},
+    {"name": "uint64", "type": "type_declaration", "size": 64},
     
     {"name": "if", "type": "if"},
     {"name": "elif", "type": "elif"},

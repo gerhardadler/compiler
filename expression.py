@@ -1,9 +1,8 @@
 class Expression:
-    def __init__(self, infix_expression, scope_variables):
+    def __init__(self, infix_expression):
         self.infix_expression = infix_expression
-        self.scope_variables = scope_variables
 
-        self.replace_variable_names_with_rbp_diff()
+        # self.replace_variable_names_with_rbp_diff()
 
         self.postfix_expression = self.create_postfix_from_infix()
         for token in self.postfix_expression:
@@ -11,12 +10,12 @@ class Expression:
         self.postfix_short()
 
 
-    def replace_variable_names_with_rbp_diff(self):
-        for token in self.infix_expression:
-            if token["type"] == "variable_name":
-                for scope_variable in self.scope_variables:
-                    if token["name"] == scope_variable["name"]:
-                        token["name"] = f"dword [rbp{scope_variable['rbp_diff']}]"
+    # def replace_variable_names_with_rbp_diff(self):
+    #     for token in self.infix_expression:
+    #         if token["type"] == "variable_name":
+    #             for scope_variable in self.scope_variables:
+    #                 if token["name"] == scope_variable["name"]:
+    #                     token["name"] = f"dword [rbp{scope_variable['rbp_diff']}]"
 
 
     def create_postfix_from_infix(self):

@@ -1,3 +1,5 @@
+from os import system
+
 import json
 import jsons
 
@@ -7,27 +9,13 @@ from compiler import compiler
 
 code = """
 def main() {
-    uint start = 65;
-    uint jump = 1;
-    print(start);
-    start = start + jump;
-    print(start);
-    start = start + jump;
-    print(start);
-    start = start + jump;
-    print(start);
-    start = start + jump;
-    print(start);
-    start = start + jump;
-    print(start);
-    start = start + jump;
+    uint32 x = 65;
+    print(x);
 }
 
-def print(uint a) {
-    syscall(1, 1, a, 4);
+def print(uint32 a) {
+    syscall(1, 1, a, 8);
 }
-
-
 """
 
 lexed_code = lexer(code)
@@ -51,3 +39,11 @@ for instruction in assembly["bss"]:
 print("\n# TEXT SECTION")
 for instruction in assembly["text"]:
     print(instruction)
+
+if input("write to \"test.asm\"? (Y/n)") != "n":
+    with open("test.asm", "w") as f:
+        f.write("\n".join(assembly["text"]))
+
+if input("Assemble? (Y/n)") != "n":
+    system("./assemble.sh test")
+    system("./test")

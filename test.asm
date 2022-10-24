@@ -8,86 +8,16 @@ syscall
 main:
 push rbp
 mov rbp, rsp
-mov dword [rbp-4], 65
-mov dword [rbp-8], 1
-sub rbp, 4
+mov dword [rbp-8], 65
+sub rbp, 8
 mov eax, dword [rbp]
-add rbp, 4
-sub rbp, 12
+add rbp, 8
+sub rbp, 8
 mov dword [rbp], eax
-add rbp, 12
-sub rsp, 12
+add rbp, 8
+sub rsp, 8
 call print
-add rsp, 12
-mov ebx, dword [rbp-4]
-mov ecx, dword [rbp-8]
-add ebx, ecx
-mov dword [rbp-4], ebx
-sub rbp, 4
-mov eax, dword [rbp]
-add rbp, 4
-sub rbp, 12
-mov dword [rbp], eax
-add rbp, 12
-sub rsp, 12
-call print
-add rsp, 12
-mov ebx, dword [rbp-4]
-mov ecx, dword [rbp-8]
-add ebx, ecx
-mov dword [rbp-4], ebx
-sub rbp, 4
-mov eax, dword [rbp]
-add rbp, 4
-sub rbp, 12
-mov dword [rbp], eax
-add rbp, 12
-sub rsp, 12
-call print
-add rsp, 12
-mov ebx, dword [rbp-4]
-mov ecx, dword [rbp-8]
-add ebx, ecx
-mov dword [rbp-4], ebx
-sub rbp, 4
-mov eax, dword [rbp]
-add rbp, 4
-sub rbp, 12
-mov dword [rbp], eax
-add rbp, 12
-sub rsp, 12
-call print
-add rsp, 12
-mov ebx, dword [rbp-4]
-mov ecx, dword [rbp-8]
-add ebx, ecx
-mov dword [rbp-4], ebx
-sub rbp, 4
-mov eax, dword [rbp]
-add rbp, 4
-sub rbp, 12
-mov dword [rbp], eax
-add rbp, 12
-sub rsp, 12
-call print
-add rsp, 12
-mov ebx, dword [rbp-4]
-mov ecx, dword [rbp-8]
-add ebx, ecx
-mov dword [rbp-4], ebx
-sub rbp, 4
-mov eax, dword [rbp]
-add rbp, 4
-sub rbp, 12
-mov dword [rbp], eax
-add rbp, 12
-sub rsp, 12
-call print
-add rsp, 12
-mov ebx, dword [rbp-4]
-mov ecx, dword [rbp-8]
-add ebx, ecx
-mov dword [rbp-4], ebx
+add rsp, 8
 mov rsp, rbp
 pop rbp
 ret
@@ -101,7 +31,7 @@ mov rdi, 1
 add rbp, 16
 mov rsi, rbp
 sub rbp, 16
-mov rdx, 4
+mov rdx, 8
 syscall
 pop r11
 pop rcx
