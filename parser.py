@@ -77,7 +77,7 @@ def parse_function_declaration():
                     "type": "variable_name",
                     "name": node["name"],
                     "size": 32,
-                    "rbp_diff": (len(outer_scope_variables) + 1) * 4
+                    "rbp_diff": (len(outer_scope_variables)) * 4
                 })
                 current_type = ""
             else:
@@ -107,8 +107,20 @@ def parse_function_call():
             continue
         elif node["name"] == ")":
             break
+        elif node["type"] == "variable_name":
+            scope_variables = inner_scope_variables + outer_scope_variables
+            for variable in scope_variables:
+                if variable["name"] == node["name"]:
+                    arguments.append(variable)
+                    arguments[-1]["argument_rbp_diff"] = -(len(inner_scope_variables) + len(arguments)) * 4
+                    break
+            else:
+                exit("syntax error")
+        elif node["type"] == "number":
+            arguments.append(node)
+            arguments[-1]["argument_rbp_diff"] = -(len(inner_scope_variables) + len(arguments)) * 4
         else:
-            arguments.append(node["name"])
+            exit("syntax error")
     else: # if no ending bracket
         exit("syntax error")
     eval("syntax_tree " + current_block).append({

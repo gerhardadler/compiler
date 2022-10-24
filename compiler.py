@@ -24,26 +24,41 @@ def compiler(syntax_tree, header=True):
             text.append("ret")
         elif node["type"] == "function_name":
             for argument in node["arguments"]:
-                text.append("sub rsp, 4")
-                text.append(f"mov rsp, {argument}")
+                if argument["type"] == "variable_name":
+                    if argument["rbp_diff"] >= 0:
+                        text.append(f"add rbp, {argument['rbp_diff']}")
+                        text.append(f"mov eax, dword [rbp]")
+                        text.append(f"sub rbp, {argument['rbp_diff']}")
+                        text.append(f"sub rbp, {abs(argument['argument_rbp_diff'])}")
+                        text.append(f"mov dword [rbp], eax")
+                        text.append(f"add rbp, {abs(argument['argument_rbp_diff'])}")
+                    else:
+                        text.append(f"sub rbp, {abs(argument['rbp_diff'])}")
+                        text.append(f"mov eax, dword [rbp]")
+                        text.append(f"add rbp, {abs(argument['rbp_diff'])}")
+                        text.append(f"sub rbp, {abs(argument['argument_rbp_diff'])}")
+                        text.append(f"mov dword [rbp], eax")
+                        text.append(f"add rbp, {abs(argument['argument_rbp_diff'])}")
+                elif argument["type"] == "number":
+                    text.append(f"mov [rbp], {argument[1]['name']}")
+            text.append(f"sub rsp, {abs(argument['argument_rbp_diff'])}")
             text.append("call " + node["name"])
-            for argument in node["arguments"]:
-                text.append("add rsp, 4")
+            text.append(f"add rsp, {abs(argument['argument_rbp_diff'])}")
         elif node["type"] == "syscall": # https://stackoverflow.com/a/2538212/12834165
             text.append("push rcx")
             text.append("push r11")
-            push_rbp_diff = 16 
             syscall_registers = ["rax", "rdi", "rsi", "rdx", "r10", "r9", "r8"]
             for argument in list(zip(syscall_registers, node["arguments"])):
                 if argument[1]["type"] == "variable_name":
-                    if argument[1]["rbp_diff"] > 0:
+                    push_rbp_diff = 16
+                    if argument[1]["rbp_diff"] >= 0:
                         text.append(f"add rbp, {argument[1]['rbp_diff'] + push_rbp_diff}")
                         text.append(f"mov {argument[0]}, rbp")
-                        text.append(f"sub rbp, {abs(argument[1]['rbp_diff']) + push_rbp_diff}")
+                        text.append(f"sub rbp, {argument[1]['rbp_diff'] + push_rbp_diff}")
                     else:
-                        text.append(f"sub rbp, {abs(argument[1]['rbp_diff']) + push_rbp_diff}")
+                        text.append(f"sub rbp, {abs(argument[1]['rbp_diff'])}")
                         text.append(f"mov {argument[0]}, rbp")
-                        text.append(f"add rbp, {abs(argument[1]['rbp_diff']) + push_rbp_diff}")
+                        text.append(f"add rbp, {abs(argument[1]['rbp_diff'])}")
                 elif argument[1]["type"] == "number":
                     text.append(f"mov {argument[0]}, {argument[1]['name']}")
             text.append("syscall")

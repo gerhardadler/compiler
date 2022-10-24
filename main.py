@@ -7,14 +7,24 @@ from compiler import compiler
 
 code = """
 def main() {
-    uint x = 65;
-    uint y = 1;
-    x = x + y;
-    print(x);
+    uint start = 65;
+    uint jump = 1;
+    print(start);
+    start = start + jump;
+    print(start);
+    start = start + jump;
+    print(start);
+    start = start + jump;
+    print(start);
+    start = start + jump;
+    print(start);
+    start = start + jump;
+    print(start);
+    start = start + jump;
 }
 
 def print(uint a) {
-    syscall(1, 1, a, 1);
+    syscall(1, 1, a, 4);
 }
 
 
