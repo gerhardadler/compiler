@@ -10,7 +10,7 @@ from compiler import compiler
 code = """
 def main() {
     uint16 x = 65;
-    uint16 y = 2;
+    uint8 y = 2;
     y = x + y;
     print(y);
 }

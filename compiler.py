@@ -7,14 +7,14 @@ registers = {
     "rsi": {"type": "register", 64: "rsi", 32: "esi", 16: "si", 8: "sil"},
     "rbp": {"type": "register", 64: "rbp", 32: "ebp", 16: "bp", 8: "bpl"}, # THIS REGISTER SHOULD NOT BE USED DUMBASS
     "rsp": {"type": "register", 64: "rsp", 32: "esp", 16: "sp", 8: "spl"}, # THIS REGISTER SHOULD NOT BE USED DUMBASS
-    "r8": {"type": "register", 64: "r8", 32: "r8d", 16: "r8w", 8: "r8l"},
-    "r9": {"type": "register", 64: "r9", 32: "r9d", 16: "r9w", 8: "r9l"},
-    "r10": {"type": "register", 64: "r10", 32: "r10d", 16: "r10w", 8: "r10l"},
-    "r11": {"type": "register", 64: "r11", 32: "r11d", 16: "r11w", 8: "r11l"},
-    "r12": {"type": "register", 64: "r12", 32: "r12d", 16: "r12w", 8: "r12l"},
-    "r13": {"type": "register", 64: "r13", 32: "r13d", 16: "r13w", 8: "r13l"},
-    "r14": {"type": "register", 64: "r14", 32: "r14d", 16: "r14w", 8: "r14l"},
-    "r15": {"type": "register", 64: "r15", 32: "r15d", 16: "r15w", 8: "r15l"}
+    "r8": {"type": "register", 64: "r8", 32: "r8d", 16: "r8w", 8: "r8b"},
+    "r9": {"type": "register", 64: "r9", 32: "r9d", 16: "r9w", 8: "r9b"},
+    "r10": {"type": "register", 64: "r10", 32: "r10d", 16: "r10w", 8: "r10b"},
+    "r11": {"type": "register", 64: "r11", 32: "r11d", 16: "r11w", 8: "r11b"},
+    "r12": {"type": "register", 64: "r12", 32: "r12d", 16: "r12w", 8: "r12b"},
+    "r13": {"type": "register", 64: "r13", 32: "r13d", 16: "r13w", 8: "r13b"},
+    "r14": {"type": "register", 64: "r14", 32: "r14d", 16: "r14w", 8: "r14b"},
+    "r15": {"type": "register", 64: "r15", 32: "r15d", 16: "r15w", 8: "r15b"}
 }
 
 def variable_operation_to_asm(instruction, variable, op, variable_spot, rbp_offset = 0):

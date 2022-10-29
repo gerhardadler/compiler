@@ -11,24 +11,24 @@ mov rbp, rsp
 add rbp, 0
 mov word [rbp], 65
 sub rbp, 0
-sub rbp, 4
-mov word [rbp], 2
-add rbp, 4
+sub rbp, 3
+mov byte [rbp], 2
+add rbp, 3
 add rbp, 0
 mov r15w, word [rbp]
 sub rbp, 0
-sub rbp, 4
-add r14w, word [rbp]
-add rbp, 4
-add r15w, r14w
-sub rbp, 4
-mov word [rbp], r15w
-add rbp, 4
-sub rbp, 4
-mov ax, word [rbp]
-add rbp, 4
+sub rbp, 3
+add r14b, byte [rbp]
+add rbp, 3
+add r15w, r14b
+sub rbp, 3
+mov byte [rbp], r15w
+add rbp, 3
+sub rbp, 3
+mov al, byte [rbp]
+add rbp, 3
 sub rbp, 12
-mov word [rbp], ax
+mov byte [rbp], al
 add rbp, 12
 sub rsp, 12
 call print
