@@ -1,4 +1,6 @@
 from compiler import variable_operation_to_asm
+from compiler import registers
+
 class Expression:
     def __init__(self, infix_expression):
         self.infix_expression = infix_expression
@@ -84,24 +86,6 @@ class Expression:
         data = []
         bss = []
         text = []
-        registers = {
-            "rax": {"type": "register", 64: "rax", 32: "eax", 16: "ax", 8: "al"},
-            "rbx": {"type": "register", 64: "rbx", 32: "ebx", 16: "bx", 8: "bl"},
-            "rcx": {"type": "register", 64: "rcx", 32: "ecx", 16: "cx", 8: "cl"},
-            "rdx": {"type": "register", 64: "rdx", 32: "edx", 16: "dx", 8: "dl"},
-            "rdi": {"type": "register", 64: "rdi", 32: "edi", 16: "di", 8: "dil"},
-            "rsi": {"type": "register", 64: "rsi", 32: "esi", 16: "si", 8: "sil"},
-            "rbp": {"type": "register", 64: "rbp", 32: "ebp", 16: "bp", 8: "bpl"}, # THIS REGISTER SHOULD NOT BE USED DUMBASS
-            "rsp": {"type": "register", 64: "rsp", 32: "esp", 16: "sp", 8: "spl"}, # THIS REGISTER SHOULD NOT BE USED DUMBASS
-            "r8": {"type": "register", 64: "r8", 32: "r8d", 16: "r8w", 8: "r8l"},
-            "r9": {"type": "register", 64: "r9", 32: "r9d", 16: "r9w", 8: "r9l"},
-            "r10": {"type": "register", 64: "r10", 32: "r10d", 16: "r10w", 8: "r10l"},
-            "r11": {"type": "register", 64: "r11", 32: "r11d", 16: "r11w", 8: "r11l"},
-            "r12": {"type": "register", 64: "r12", 32: "r12d", 16: "r12w", 8: "r12l"},
-            "r13": {"type": "register", 64: "r13", 32: "r13d", 16: "r13w", 8: "r13l"},
-            "r14": {"type": "register", 64: "r14", 32: "r14d", 16: "r14w", 8: "r14l"},
-            "r15": {"type": "register", 64: "r15", 32: "r15d", 16: "r15w", 8: "r15l"}
-        }
 
         unused_registers = [
             registers["rbx"],
@@ -133,9 +117,6 @@ class Expression:
                     text += variable_operation_to_asm(operator["asm"], right, "eax", 1)
                 else:
                     text += variable_operation_to_asm(operator["asm"], left, right["name"], 1)
-                    # elif left["type"] == "variable_type":
-                    #     text.append(f"{operator['name']} {left['size_specifier']} [{left['name']}{abs(left['rbp_diff'])}], {right['size_specifier']} [{right['name']}{abs(right['rbp_diff'])}]")
-                    
                 break
 
             if left["type"] != "register":
@@ -152,11 +133,6 @@ class Expression:
                 else:
                     exit("type not supported in expression code yet")
                 left = left_register
-
-            # if (right["type"] != "number") and (right["type"] != "register"):
-            #     right_register = unused_registers.pop()
-            #     text.append(f"mov {right_register}, {right['name']}")
-            #     right["name"] = right_register
             
             if right["type"] == "variable_name":
                 unused_register = unused_registers.pop()

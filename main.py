@@ -12,6 +12,11 @@ def main() {
     uint16 x = 65;
     uint16 y = 2;
     y = x + y;
+    print(y);
+}
+
+def print(uint32 a) {
+    syscall(1, 1, a, 2);
 }
 """
 
