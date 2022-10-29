@@ -67,7 +67,7 @@ for node in syntax_tree:
         data.append(f"{node['name']} dd {node['expression']}")
     elif node["type"] == "update_variable":
         node["expression"] = Expression("x = 4 - y * 3 + ( z + 2 ) * 4".split())
-        data, bss, text = node["expression"].to_assembly()
+        data, bss, text = node["expression"].to_asm()
 
 print(data)
 for line in text:

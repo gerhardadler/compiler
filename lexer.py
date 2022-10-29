@@ -4,32 +4,32 @@ names = [
     {"name": "||", "type": "logical_operator", "precedence": 11,  "associativity": "left_to_right"},
 
     # bitwise operators
-    {"name": "<<", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "assembly": "shl"},
-    {"name": ">>", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "assembly": "shr"},
-    {"name": "&", "type": "bitwise_operator", "precedence": 7,  "associativity": "left_to_right", "assembly": "and"},
-    {"name": "^", "type": "bitwise_operator", "precedence": 8,  "associativity": "left_to_right", "assembly": "xor"},
-    {"name": "|", "type": "bitwise_operator", "precedence": 9,  "associativity": "left_to_right", "assembly": "or"},
+    {"name": "<<", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "asm": "shl"},
+    {"name": ">>", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "asm": "shr"},
+    {"name": "&", "type": "bitwise_operator", "precedence": 7,  "associativity": "left_to_right", "asm": "and"},
+    {"name": "^", "type": "bitwise_operator", "precedence": 8,  "associativity": "left_to_right", "asm": "xor"},
+    {"name": "|", "type": "bitwise_operator", "precedence": 9,  "associativity": "left_to_right", "asm": "or"},
 
     # comparison operators
-    {"name": "==", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "assembly": "cmp"},
-    {"name": "!=", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "assembly": "cmp"},
-    {"name": "<", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
-    {"name": ">", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
-    {"name": "<=", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
-    {"name": ">=", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "assembly": "cmp"},
+    {"name": "==", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "asm": "cmp"},
+    {"name": "!=", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "asm": "cmp"},
+    {"name": "<", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "asm": "cmp"},
+    {"name": ">", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "asm": "cmp"},
+    {"name": "<=", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "asm": "cmp"},
+    {"name": ">=", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "asm": "cmp"},
 
     # assignment operators
-    {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "mov"},
-    {"name": "+=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "add"},
-    {"name": "-=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "sub"},
-    {"name": "*=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "mul"},
-    {"name": "/=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "assembly": "div"},
+    {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"},
+    {"name": "+=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "add"},
+    {"name": "-=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "sub"},
+    {"name": "*=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mul"},
+    {"name": "/=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "div"},
 
     # arithmetic operators
-    {"name": "*", "type": "arithmetic_operator", "precedence": 2,  "associativity": "left_to_right", "assembly": "mul"},
-    {"name": "/", "type": "arithmetic_operator", "precedence": 2,  "associativity": "left_to_right", "assembly": "div"},
-    {"name": "+", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "assembly": "add"},
-    {"name": "-", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "assembly": "sub"},
+    {"name": "*", "type": "arithmetic_operator", "precedence": 2,  "associativity": "left_to_right", "asm": "mul"},
+    {"name": "/", "type": "arithmetic_operator", "precedence": 2,  "associativity": "left_to_right", "asm": "div"},
+    {"name": "+", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "asm": "add"},
+    {"name": "-", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "asm": "sub"},
 
     # seperators
     {"name": ",", "type": "comma"},

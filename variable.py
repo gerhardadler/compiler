@@ -9,20 +9,8 @@ class Variable:
             self.rbp_diff = scope_rbp_diff
         else:
             self.rbp_diff = scope_rbp_diff - variable_type["size"] // 8
-    
-    def size_to_specifier(self):
-        if self.size == 8:
-            return "byte"
-        if self.size == 16:
-            return "word"
-        if self.size == 32:
-            return "dword"
-        if self.size == 64:
-            return "qword"
-        # if nothing matches
-        raise Exception("Invalid size")
 
-    def operation_to_assembly(self, instruction, op, variable_spot, rbp_offset = 0):
+    def operation_to_asm(self, instruction, op, variable_spot, rbp_offset = 0):
         output = []
         if self.rbp_diff >= 0:
             output.append(f"add rbp, {self.rbp_diff + rbp_offset}")

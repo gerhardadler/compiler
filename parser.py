@@ -1,11 +1,22 @@
 from expression import Expression
-from variable import Variable
 
 syntax_tree = []
 outer_scope_variables = [] # arguments
 inner_scope_variables = [] # local variables
 current_block = ""
 stack = []
+
+def size_to_specifier(size):
+    if size == 8:
+        return "byte"
+    if size == 16:
+        return "word"
+    if size == 32:
+        return "dword"
+    if size == 64:
+        return "qword"
+    # if nothing matches
+    raise Exception("Invalid size")
 
 def stack_add_variable_info():
     for stack_index, node in enumerate(stack):
@@ -30,6 +41,16 @@ def outer_scope_rbp_diff():
     rbp_diff //= 8
     return rbp_diff
 
+def create_variable_node(variable_type, variable_name, scope_rbp_diff):
+    return {
+        "type": "variable_name",
+        "name": variable_name,
+        "variable_type": variable_type["name"],
+        "size": variable_type["size"],
+        "size_specifier": size_to_specifier(variable_type["size"]),
+        "rbp_diff": scope_rbp_diff if scope_rbp_diff >= 0 else scope_rbp_diff - variable_type["size"] // 8
+    }
+
 def parse_variable_declaration():
     global syntax_tree
     global outer_scope_variables
@@ -37,22 +58,23 @@ def parse_variable_declaration():
     global current_block
     global stack
     if stack[1]["type"] != "variable_name":
-        exit("syntax error")
+        exit("syntax error 1")
     if stack[2]["name"] != "=":
-        exit("syntax error")
+        exit("syntax error 2")
     if stack[3]["type"] not in ["number", "variable_name"]:
-        exit("syntax_error")
+        exit("syntax error 3")
 
     variable_type = stack.pop(0)
     variable_name = stack[0]["name"]
 
-    inner_scope_variables.append(Variable(variable_type, variable_name, inner_scope_rbp_diff()))
+    variable = create_variable_node(variable_type, variable_name, inner_scope_rbp_diff())
+    inner_scope_variables.append(variable)
 
     stack_add_variable_info()
 
     eval("syntax_tree " + current_block).append({
         "type": "variable_declaration",
-        "variable": Variable(variable_type, variable_name, inner_scope_rbp_diff()),
+        "variable": variable,
         "expression": Expression(stack)
     })
 
@@ -63,7 +85,7 @@ def parse_variable_reference():
     global current_block
     global stack
     if stack[1]["type"] != "assignment_operator":
-        exit("syntax error")
+        exit("syntax error4")
 
     stack_add_variable_info()
 
@@ -93,15 +115,15 @@ def parse_function_declaration():
             if not current_type:
                 current_type = node
             else:
-                exit("syntax error")
+                exit("syntax error5")
         elif node["type"] == "variable_name":
             if current_type:
-                outer_scope_variables.append(Variable(current_type, node, outer_scope_rbp_diff()))
+                outer_scope_variables.append(create_variable_node(current_type, node["name"], outer_scope_rbp_diff()))
                 current_type = ""
             else:
-                exit("syntax error")
+                exit("syntax error6")
         else:
-            exit("syntax error")
+            exit("syntax error7")
 
     eval("syntax_tree " + current_block).append({
         "type": "function",
@@ -133,14 +155,14 @@ def parse_function_call():
                     arguments[-1]["argument_rbp_diff"] = -(len(inner_scope_variables) + len(arguments)) * 4
                     break
             else:
-                exit("syntax error")
+                exit("syntax error8")
         elif node["type"] == "number":
             arguments.append(node)
             arguments[-1]["argument_rbp_diff"] = -(len(inner_scope_variables) + len(arguments)) * 4
         else:
-            exit("syntax error")
+            exit("syntax error9")
     else: # if no ending bracket
-        exit("syntax error")
+        exit("syntax error10")
     eval("syntax_tree " + current_block).append({
         "type": "function_name",
         "name": function_name,
@@ -167,13 +189,13 @@ def parse_syscall():
                     arguments.append(variable)
                     break
             else:
-                exit("syntax error")
+                exit("syntax error11")
         elif node["type"] == "number":
             arguments.append(node)
         else:
-            exit("syntax error")
+            exit("syntax error12")
     else: # if no ending bracket
-        exit("syntax error")
+        exit("syntax error13")
     eval("syntax_tree " + current_block).append({
         "type": "syscall",
         "arguments": arguments

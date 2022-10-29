@@ -1,4 +1,20 @@
-from variable import Variable
+def variable_operation_to_asm(instruction, variable, op, variable_spot, rbp_offset = 0):
+        output = []
+        if variable["rbp_diff"] >= 0:
+            output.append(f"add rbp, {variable['rbp_diff'] + rbp_offset}")
+            if variable_spot == 1:
+                output.append(f"{instruction} {variable['size_specifier']} [rbp], {op}")
+            else:
+                output.append(f"{instruction} {op}, {variable['size_specifier']} [rbp]")
+            output.append(f"sub rbp, {variable['rbp_diff'] + rbp_offset}")
+        else:
+            output.append(f"sub rbp, {abs(variable['rbp_diff']) + rbp_offset}")
+            if variable_spot == 1:
+                output.append(f"{instruction} {variable['size_specifier']} [rbp], {op}")
+            else:
+                output.append(f"{instruction} {op}, {variable['size_specifier']} [rbp]")
+            output.append(f"add rbp, {abs(variable['rbp_diff']) + rbp_offset}")
+        return output
 
 def compiler(syntax_tree, header=True):
     data = []
@@ -9,12 +25,13 @@ def compiler(syntax_tree, header=True):
 
     for node in syntax_tree:
         if node["type"] == "variable_declaration":
-            variable_name = node['expression'].postfix_expression[0]['name']
-            value = node['expression'].postfix_expression[1]['name']
-            # TODO: not make it only 32 bit
-            text.append(f"mov {variable_name}, {value}")
+            # variable_name = node['expression'].postfix_expression[0]['name']
+            # value = node['expression'].postfix_expression[1]['name']
+            # # TODO: not make it only 32 bit
+            # text.append(f"mov {variable_name}, {value}")
+            text += node["expression"].to_asm()["text"]
         elif node["type"] == "variable_assignment":
-            text += node["expression"].to_assembly()["text"]
+            text += node["expression"].to_asm()["text"]
         elif node["type"] == "function":
             text.append(node["name"] + ":")
             text.append("push rbp")
@@ -28,14 +45,14 @@ def compiler(syntax_tree, header=True):
             for argument in node["arguments"]:
                 if argument["type"] == "variable_name":
                     if argument["rbp_diff"] >= 0:
-                        variable_operation_to_assembly("mov", argument, "eax", 2)
+                        text += variable_operation_to_asm("mov", argument, "eax", 2)
                         text.append(f"sub rbp, {abs(argument['argument_rbp_diff'])}")
-                        text.append(f"mov {size_to_specifier(argument['size'])} [rbp], eax")
+                        text.append(f"mov {argument['size_specifier']} [rbp], eax")
                         text.append(f"add rbp, {abs(argument['argument_rbp_diff'])}")
                     else:
-                        variable_operation_to_assembly("mov", argument, "eax", 2)
+                        text += variable_operation_to_asm("mov", argument, "eax", 2)
                         text.append(f"sub rbp, {abs(argument['argument_rbp_diff'])}")
-                        text.append(f"mov {size_to_specifier(argument['size'])} [rbp], eax")
+                        text.append(f"mov {argument['size_specifier']} [rbp], eax")
                         text.append(f"add rbp, {abs(argument['argument_rbp_diff'])}")
                 elif argument["type"] == "number":
                     text.append(f"mov [rbp], {argument[1]['name']}")
