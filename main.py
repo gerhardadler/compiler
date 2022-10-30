@@ -8,15 +8,15 @@ from parser import parser
 from compiler import compiler
 
 code = """
-def main() {
-    uint16 x = 65;
-    uint8 y = 2;
-    y = x + y;
-    print(y);
+def print(u16 output, u32 length) {
+    syscall(1, 1, output, length);
 }
 
-def print(uint32 a) {
-    syscall(1, 1, a, 2);
+def main() {
+    u16 x = 65;
+    u16 y = 66;
+    print(y, 2);
+    print(10, 2);
 }
 """
 

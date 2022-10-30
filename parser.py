@@ -3,6 +3,7 @@ from expression import Expression
 syntax_tree = []
 outer_scope_variables = [] # arguments
 inner_scope_variables = [] # local variables
+functions = []
 current_block = ""
 stack = []
 
@@ -25,13 +26,14 @@ def stack_add_variable_info():
                 if node["name"] == scope_variable["name"]:
                     stack[stack_index] = scope_variable
 
-def inner_scope_rbp_diff():
+def inner_scope_rbp_diff(variable_size):
     global inner_scope_variables
     rbp_diff = 0
     for variable in inner_scope_variables:
-        rbp_diff += variable["size"]
+        rbp_diff -= variable["size"]
+    rbp_diff -= variable_size
     rbp_diff //= 8
-    return -rbp_diff
+    return rbp_diff
 
 def outer_scope_rbp_diff():
     global outer_scope_variables
@@ -48,7 +50,7 @@ def create_variable_node(variable_type, variable_name, scope_rbp_diff):
         "variable_type": variable_type["name"],
         "size": variable_type["size"],
         "size_specifier": size_to_specifier(variable_type["size"]),
-        "rbp_diff": scope_rbp_diff if scope_rbp_diff >= 0 else scope_rbp_diff - variable_type["size"] // 8
+        "rbp_diff": scope_rbp_diff
     }
 
 def parse_variable_declaration():
@@ -67,7 +69,7 @@ def parse_variable_declaration():
     variable_type = stack.pop(0)
     variable_name = stack[0]["name"]
 
-    variable = create_variable_node(variable_type, variable_name, inner_scope_rbp_diff())
+    variable = create_variable_node(variable_type, variable_name, inner_scope_rbp_diff(variable_type["size"]))
     inner_scope_variables.append(variable)
 
     stack_add_variable_info()
@@ -98,75 +100,96 @@ def parse_function_declaration():
     global syntax_tree
     global outer_scope_variables
     global inner_scope_variables
+    global functions
     global current_block
     global stack
+
+    outer_scope_variables = [] # resets outer variables (parameters)
+
     stack.pop(0) # gets rid of function definer
     function_name = stack.pop(0)["name"]
 
-    current_type = ""
-    for node in stack:
-        if node["type"] == "comma":
-            continue
-        elif node["name"] == "(":
-            continue
-        elif node["name"] == ")":
-            break
-        elif node["type"] == "type_declaration":
-            if not current_type:
-                current_type = node
-            else:
-                exit("syntax error5")
-        elif node["type"] == "variable_name":
-            if current_type:
-                outer_scope_variables.append(create_variable_node(current_type, node["name"], outer_scope_rbp_diff()))
-                current_type = ""
-            else:
-                exit("syntax error6")
-        else:
-            exit("syntax error7")
+    stack = [node for node in stack if node["type"] in ["type_declaration", "variable_name"]]
+    
+    stack_iter = iter(stack)
+    variable_types_and_names = list(zip(stack_iter, stack_iter)) # type and name in list of tuples
+    print(variable_types_and_names)
 
-    eval("syntax_tree " + current_block).append({
+    variable_types_and_names.reverse() # reverses to get correct rdp diff
+
+    for type, name in variable_types_and_names:
+        outer_scope_variables.append(create_variable_node(type, name["name"], outer_scope_rbp_diff()))
+
+    outer_scope_variables.reverse() # reverses back to correlate with arguments
+
+    function = {
         "type": "function",
         "name": function_name,
         "parameters": outer_scope_variables,
         "body": []
-    })
+    }
+    eval("syntax_tree " + current_block).append(function)
+    functions.append(function)
     current_block += '[-1]["body"]'
-    inner_scope_variables = []
+    inner_scope_variables = [] # resets inner variables
 
 def parse_function_call():
     global syntax_tree
+    global functions
     global current_block
     global stack
     function_name = stack.pop(0)["name"]
-    arguments = []
-    for node in stack:
-        if node["type"] == "comma":
-            continue
-        elif node["name"] == "(":
-            continue
-        elif node["name"] == ")":
+    for function in functions:
+        if function_name == function["name"]:
+            parameters = function["parameters"]
             break
-        elif node["type"] == "variable_name":
-            scope_variables = inner_scope_variables + outer_scope_variables
+    else: # if function name isnt declared
+        exit("undeclared function name")
+
+    stack_add_variable_info()
+    arguments = [node for node in stack if node["type"] not in ["round_bracket", "comma"]]
+     
+    if len(parameters) != len(arguments):
+        exit("unmatching parameters and arguments")
+    
+    scope_variables = inner_scope_variables + outer_scope_variables
+    output_arguments = []
+    for argument, parameter in zip(arguments, parameters):
+        arguments_size = 0
+        for output_argument in output_arguments:
+            arguments_size += output_argument["parameter_size"]
+        if argument["type"] == "variable_name":
             for variable in scope_variables:
-                if variable["name"] == node["name"]:
-                    arguments.append(variable)
-                    arguments[-1]["argument_rbp_diff"] = -(len(inner_scope_variables) + len(arguments)) * 4
+                if variable["name"] == argument["name"]:
+                    output_arguments.append({
+                        "type": "variable_name",
+                        "name": variable["name"],
+                        "variable_type": variable["variable_type"],
+                        "size": argument["size"],
+                        "size_specifier": size_to_specifier(argument["size"]),
+                        "rbp_diff": argument["rbp_diff"],
+                        "parameter_size": parameter["size"],
+                        "parameter_size_specifier": size_to_specifier(parameter["size"]),
+                        "argument_rbp_diff": inner_scope_rbp_diff(arguments_size + parameter["size"])
+                    })
                     break
-            else:
-                exit("syntax error8")
-        elif node["type"] == "number":
-            arguments.append(node)
-            arguments[-1]["argument_rbp_diff"] = -(len(inner_scope_variables) + len(arguments)) * 4
+            else: # if variable not in scope
+                exit("variable not declared")
+        elif argument["type"] == "number":
+            output_arguments.append({
+                "type": "number",
+                "name": argument["name"],
+                "parameter_size": parameter["size"],
+                "parameter_size_specifier": size_to_specifier(parameter["size"]),
+                "argument_rbp_diff": inner_scope_rbp_diff(arguments_size + parameter["size"])
+            })
         else:
-            exit("syntax error9")
-    else: # if no ending bracket
-        exit("syntax error10")
+            exit("type not supported for argument")
+
     eval("syntax_tree " + current_block).append({
         "type": "function_name",
         "name": function_name,
-        "arguments": arguments
+        "arguments": output_arguments
     })
 
 def parse_syscall():

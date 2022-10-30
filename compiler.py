@@ -44,10 +44,6 @@ def compiler(syntax_tree, header=True):
 
     for node in syntax_tree:
         if node["type"] == "variable_declaration":
-            # variable_name = node['expression'].postfix_expression[0]['name']
-            # value = node['expression'].postfix_expression[1]['name']
-            # # TODO: not make it only 32 bit
-            # text.append(f"mov {variable_name}, {value}")
             text += node["expression"].to_asm()["text"]
         elif node["type"] == "variable_assignment":
             text += node["expression"].to_asm()["text"]
@@ -63,13 +59,15 @@ def compiler(syntax_tree, header=True):
         elif node["type"] == "function_name":
             for argument in node["arguments"]:
                 if argument["type"] == "variable_name":
-                    register = registers["rax"][argument["size"]]
-                    text += variable_operation_to_asm("mov", argument, register, 2)
+                    rax_register = registers["rax"][argument["size"]]
+                    text += variable_operation_to_asm("mov", argument, rax_register, 2)
                     text.append(f"sub rbp, {abs(argument['argument_rbp_diff'])}")
-                    text.append(f"mov {argument['size_specifier']} [rbp], {register}")
+                    text.append(f"mov {argument['parameter_size_specifier']} [rbp], {rax_register}")
                     text.append(f"add rbp, {abs(argument['argument_rbp_diff'])}")
                 elif argument["type"] == "number":
-                    text.append(f"mov [rbp], {argument[1]['name']}")
+                    text.append(f"sub rbp, {abs(argument['argument_rbp_diff'])}")
+                    text.append(f"mov {argument['parameter_size_specifier']} [rbp], {argument['name']}")
+                    text.append(f"add rbp, {abs(argument['argument_rbp_diff'])}")
             text.append(f"sub rsp, {abs(argument['argument_rbp_diff'])}")
             text.append("call " + node["name"])
             text.append(f"add rsp, {abs(argument['argument_rbp_diff'])}")
