@@ -16,7 +16,7 @@ add rbp, 20
 mov rsi, rbp
 sub rbp, 20
 add rbp, 16
-mov edx, [rbp]
+mov rdx, rbp
 sub rbp, 16
 syscall
 pop r11

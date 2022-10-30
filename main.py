@@ -9,11 +9,11 @@ from compiler import compiler
 
 code = """
 def print(u16 output, u32 length) {
-    syscall(1, 1, output, length);
+    syscall(1, 1, @output, length);
 }
 
 def main() {
-    u16 x = 65;
+    u16 gif = 65;
     u16 y = 66;
     print(y, 2);
     print(10, 2);

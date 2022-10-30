@@ -20,11 +20,15 @@ def size_to_specifier(size):
     raise Exception("Invalid size")
 
 def stack_add_variable_info():
-    for stack_index, node in enumerate(stack):
+    for node_index, node in enumerate(stack):
         if node["type"] == "variable_name":
             for scope_variable in inner_scope_variables + outer_scope_variables:
                 if node["name"] == scope_variable["name"]:
-                    stack[stack_index] = scope_variable
+                    stack[node_index] = scope_variable
+                    if stack[node_index - 1]["type"] == "address_of":
+                        node["address_off"] = True
+                    else:
+                        node["address_off"] = False
 
 def inner_scope_rbp_diff(variable_size):
     global inner_scope_variables
@@ -109,7 +113,7 @@ def parse_function_declaration():
     stack.pop(0) # gets rid of function definer
     function_name = stack.pop(0)["name"]
 
-    stack = [node for node in stack if node["type"] in ["type_declaration", "variable_name"]]
+    stack = [node for node in stack if node["type"] not in ["comma", "round_bracket", "address_of"]]
     
     stack_iter = iter(stack)
     variable_types_and_names = list(zip(stack_iter, stack_iter)) # type and name in list of tuples
@@ -147,8 +151,9 @@ def parse_function_call():
         exit("undeclared function name")
 
     stack_add_variable_info()
-    arguments = [node for node in stack if node["type"] not in ["round_bracket", "comma"]]
-     
+    arguments = [node for node in stack if node["type"] not in ["comma", "round_bracket", "address_of"]]
+    print(arguments)
+    print(parameters)
     if len(parameters) != len(arguments):
         exit("unmatching parameters and arguments")
     
@@ -165,6 +170,7 @@ def parse_function_call():
                         "type": "variable_name",
                         "name": variable["name"],
                         "variable_type": variable["variable_type"],
+                        "address_of": False,
                         "size": argument["size"],
                         "size_specifier": size_to_specifier(argument["size"]),
                         "rbp_diff": argument["rbp_diff"],
@@ -198,21 +204,18 @@ def parse_syscall():
     global stack
     stack.pop(0) # gets rid of the syscall keyword
     arguments = []
+
+    stack_add_variable_info()
+
     for node in stack:
-        if node["type"] == "comma":
+        if node["type"] in ["comma", "address_of"]:
             continue
         elif node["name"] == "(":
             continue
         elif node["name"] == ")":
             break
         elif node["type"] == "variable_name":
-            scope_variables = inner_scope_variables + outer_scope_variables
-            for variable in scope_variables:
-                if variable["name"] == node["name"]:
-                    arguments.append(variable)
-                    break
-            else:
-                exit("syntax error11")
+            arguments.append(node)
         elif node["type"] == "number":
             arguments.append(node)
         else:

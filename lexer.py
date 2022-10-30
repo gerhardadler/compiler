@@ -1,14 +1,17 @@
-names = [
+from lib2to3.pgen2 import token
+import re
+
+symbols = [
     # logical operators
-    {"name": "&&", "type": "logical_operator", "precedence": 10,  "associativity": "left_to_right"},
-    {"name": "||", "type": "logical_operator", "precedence": 11,  "associativity": "left_to_right"},
+    {"name": "&&", "type": "logical_operator", "precedence": 10, "associativity": "left_to_right"},
+    {"name": "||", "type": "logical_operator", "precedence": 11, "associativity": "left_to_right"},
 
     # bitwise operators
-    {"name": "<<", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "asm": "shl"},
-    {"name": ">>", "type": "bitwise_operator", "precedence": 4,  "associativity": "left_to_right", "asm": "shr"},
-    {"name": "&", "type": "bitwise_operator", "precedence": 7,  "associativity": "left_to_right", "asm": "and"},
-    {"name": "^", "type": "bitwise_operator", "precedence": 8,  "associativity": "left_to_right", "asm": "xor"},
-    {"name": "|", "type": "bitwise_operator", "precedence": 9,  "associativity": "left_to_right", "asm": "or"},
+    {"name": "<<", "type": "bitwise_operator", "precedence": 4, "associativity": "left_to_right", "asm": "shl"},
+    {"name": ">>", "type": "bitwise_operator", "precedence": 4, "associativity": "left_to_right", "asm": "shr"},
+    {"name": "&", "type": "bitwise_operator", "precedence": 7, "associativity": "left_to_right", "asm": "and"},
+    {"name": "^", "type": "bitwise_operator", "precedence": 8, "associativity": "left_to_right", "asm": "xor"},
+    {"name": "|", "type": "bitwise_operator", "precedence": 9, "associativity": "left_to_right", "asm": "or"},
 
     # comparison operators
     {"name": "==", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "asm": "cmp"},
@@ -26,10 +29,10 @@ names = [
     {"name": "/=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "div"},
 
     # arithmetic operators
-    {"name": "*", "type": "arithmetic_operator", "precedence": 2,  "associativity": "left_to_right", "asm": "mul"},
-    {"name": "/", "type": "arithmetic_operator", "precedence": 2,  "associativity": "left_to_right", "asm": "div"},
-    {"name": "+", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "asm": "add"},
-    {"name": "-", "type": "arithmetic_operator", "precedence": 3,  "associativity": "left_to_right", "asm": "sub"},
+    {"name": "*", "type": "arithmetic_operator", "precedence": 2, "associativity": "left_to_right", "asm": "mul"},
+    {"name": "/", "type": "arithmetic_operator", "precedence": 2, "associativity": "left_to_right", "asm": "div"},
+    {"name": "+", "type": "arithmetic_operator", "precedence": 3, "associativity": "left_to_right", "asm": "add"},
+    {"name": "-", "type": "arithmetic_operator", "precedence": 3, "associativity": "left_to_right", "asm": "sub"},
 
     # seperators
     {"name": ",", "type": "comma"},
@@ -43,6 +46,11 @@ names = [
     {"name": "[", "type": "bracket"},
     {"name": "]", "type": "bracket"},
 
+    {"name": "@", "type": "address_of"}
+]
+symbols.sort(reverse=True, key=lambda symbol: len(symbol["name"])) # avoids overlapping as symbols with longer names come first
+
+keywords = [
     # type declaration
     {"name": "u8", "type": "type_declaration", "size": 8},
     {"name": "u16", "type": "type_declaration", "size": 16},
@@ -56,7 +64,7 @@ names = [
     {"name": "syscall", "type": "syscall"}
 ]
 
-def is_str_number(str):
+def str_is_number(str):
     try:
         float(str)
         return True
@@ -64,48 +72,32 @@ def is_str_number(str):
         return False
 
 def lexer(code):
-    code = " ".join(code.split()) + " "
+    code = re.findall(r"[A-Za-z0-9_]+|\S", code)
 
     output_tokens = []
-    code_index = 0
 
-    while code_index < len(code):
-        first_seperator_index = -1 # if there is no more seperators, -1 will be used.
-        for seperator in [dict["name"] for dict in names] + [" "]:
-            seperator_index = code.find(seperator, code_index)
-            if first_seperator_index == -1 or (seperator_index < first_seperator_index and seperator_index != -1):
-                first_seperator_index = seperator_index
-        
-        current_word = code[code_index:first_seperator_index]
-
-        if code[code_index] == " ":
-            code_index += 1
-            continue
-        for name in names:
-            if code.startswith(name["name"], code_index):
-                output_tokens.append(name)
-                code_index += len(name["name"]) - 1 # subtracting 1, as 1 is added later.
+    token_index = 0
+    while token_index < len(code):
+        for symbol in symbols + keywords:
+            if code[token_index] == symbol["name"]:
+                output_tokens.append(symbol)
                 break
-        else: # nobreak
-            if is_str_number(current_word):
+        else: # if token isn't a symbol
+            if str_is_number(code[token_index]):
                 output_tokens.append({
-                    "name": current_word,
+                    "name": code[token_index],
                     "type": "number"
                 })
-                code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
-            else:
-                if code[first_seperator_index] == "(":
-                    output_tokens.append({
-                    "name": current_word,
+            elif code[token_index + 1] == "(":
+                output_tokens.append({
+                    "name": code[token_index],
                     "type": "function_name"
                 })
-                else:
-                    output_tokens.append({
-                        "name": current_word,
-                        "type": "variable_name"
-                    })
-                code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
-
-        code_index += 1
+            else:
+                output_tokens.append({
+                    "name": code[token_index],
+                    "type": "variable_name"
+                })
+        token_index += 1
     
     return output_tokens
