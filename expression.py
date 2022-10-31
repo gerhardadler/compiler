@@ -9,11 +9,6 @@ class Expression:
             print(token["name"], end=" ")
         self.postfix_short()
 
-
-    def asm_construct(self, instruction, op1, op2):
-        return f"{instruction} {op1}, {op2}"
-
-
     def create_postfix_from_infix(self):
         # https://en.wikipedia.org/wiki/Shunting_yard_algorithm#The_algorithm_in_detail
         # https://dev.to/quantumsheep/how-calculators-read-mathematical-expression-with-operator-precedence-4n9h
