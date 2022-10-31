@@ -1,2 +1,5 @@
+add function for adding lines to text
+add references to compiler
+
 fix type sizes
 add pointers
