@@ -26,9 +26,8 @@ def stack_add_variable_info():
                 if node["name"] == scope_variable["name"]:
                     stack[node_index] = scope_variable
                     if stack[node_index - 1]["type"] == "address_of":
-                        node["address_off"] = True
-                    else:
-                        node["address_off"] = False
+                        stack[node_index]["address_of"] = True
+                        stack.pop(node_index - 1) # removes address_of specifier
 
 def inner_scope_rbp_diff(variable_size):
     global inner_scope_variables
@@ -54,7 +53,8 @@ def create_variable_node(variable_type, variable_name, scope_rbp_diff):
         "variable_type": variable_type["name"],
         "size": variable_type["size"],
         "size_specifier": size_to_specifier(variable_type["size"]),
-        "rbp_diff": scope_rbp_diff
+        "rbp_diff": scope_rbp_diff,
+        "address_of": False
     }
 
 def parse_variable_declaration():

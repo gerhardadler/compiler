@@ -17,26 +17,50 @@ registers = {
     "r15": {"type": "register", 64: "r15", 32: "r15d", 16: "r15w", 8: "r15b"}
 }
 
+def add_asm_line(text, instruction, op1, op2):
+    text.append(f"{instruction} {op1}, {op2}")
+
+# def apply_rbp_diff(variable):
+#     return f"{'add' if variable['rbp_diff'] >= 0 else 'sub'} rbp, {abs(variable['rbp_diff'])}"
+
+# def unapply_rbp_diff(variable):
+#     return f"{'add' if variable['rbp_diff'] >= 0 else 'sub'} rbp, {abs(variable['rbp_diff'])}"
+
+
+# def add_instruction(text, instruction, op1, op2):
+#     if op1["type"] == "variable_name":
+#         if op2["type"] == "variable_name":
+#             text.append(apply_rbp_diff(op2))
+#             text.append(f"mov {registers['rax'][op1['size']]}, {op1['size_specifier']} [rbp]")
+#             text.append(unapply_rbp_diff(op2))
+#         else
+
+#     else:
+#     text.append(f"{instruction} {op1}, {op2}")
+
+def get_variable_rbp_reference(variable): # returns a string depending on if variable has "address_of"=True
+    if variable["address_of"] is True:
+        return "rbp"
+    else:
+        return f"{variable['size_specifier']} [rbp]"
+
 def variable_operation_to_asm(instruction, variable, op, variable_spot, rbp_offset = 0):
         output = []
         if variable["rbp_diff"] >= 0:
-            output.append(f"add rbp, {variable['rbp_diff'] + rbp_offset}")
+            add_asm_line(output, "add", "rbp", variable['rbp_diff'] + rbp_offset)
             if variable_spot == 1:
-                output.append(f"{instruction} {variable['size_specifier']} [rbp], {op}")
+                add_asm_line(output, instruction, get_variable_rbp_reference(variable), op)
             else:
-                output.append(f"{instruction} {op}, {variable['size_specifier']} [rbp]")
-            output.append(f"sub rbp, {variable['rbp_diff'] + rbp_offset}")
+                add_asm_line(output, instruction, op, get_variable_rbp_reference(variable))
+            add_asm_line(output, "sub", "rbp", variable['rbp_diff'] + rbp_offset)
         else:
-            output.append(f"sub rbp, {abs(variable['rbp_diff']) + rbp_offset}")
+            add_asm_line(output, "sub", "rbp", variable['rbp_diff'] + rbp_offset)
             if variable_spot == 1:
-                output.append(f"{instruction} {variable['size_specifier']} [rbp], {op}")
+                add_asm_line(output, instruction, get_variable_rbp_reference(variable), op)
             else:
-                output.append(f"{instruction} {op}, {variable['size_specifier']} [rbp]")
-            output.append(f"add rbp, {abs(variable['rbp_diff']) + rbp_offset}")
+                add_asm_line(output, instruction, op, get_variable_rbp_reference(variable))
+            add_asm_line(output, "add", "rbp", variable['rbp_diff'] + rbp_offset)
         return output
-
-def add_asm_line(text, instruction, op1, op2):
-    text.append(f"{instruction} {op1}, {op2}")
 
 def compiler(syntax_tree, header=True):
     data = []
@@ -56,7 +80,7 @@ def compiler(syntax_tree, header=True):
             add_asm_line(text, "mov", "rbp", "rsp")
             text += compiler(node["body"], header=False)["text"]
 
-            add_asm_line(text, "mov", "rsp", "rpb")
+            add_asm_line(text, "mov", "rsp", "rbp")
             text.append("pop rbp")
             text.append("ret")
         elif node["type"] == "function_name":
@@ -77,20 +101,28 @@ def compiler(syntax_tree, header=True):
         elif node["type"] == "syscall": # https://stackoverflow.com/a/2538212/12834165
             text.append("push rcx")
             text.append("push r11")
-            syscall_registers = ["rax", "rdi", "rsi", "rdx", "r10", "r9", "r8"]
+            syscall_registers = [
+                registers["rax"],
+                registers["rdi"],
+                registers["rsi"],
+                registers["rdx"],
+                registers["r10"],
+                registers["r9"],
+                registers["r8"]
+            ]
             for register, argument in list(zip(syscall_registers, node["arguments"])):
                 if argument["type"] == "variable_name":
                     push_rbp_diff = 16
                     if argument["rbp_diff"] >= 0:
                         add_asm_line(text, "add", "rbp", argument['rbp_diff'] + push_rbp_diff)
-                        add_asm_line(text, "mov", register, "rbp")
+                        add_asm_line(text, "mov", register[64], get_variable_rbp_reference(argument)) # issues with movzx
                         add_asm_line(text, "sub", "rbp", argument['rbp_diff'] + push_rbp_diff)
                     else:
                         add_asm_line(text, "sub", "rbp", abs(argument['rbp_diff'] + push_rbp_diff))
-                        add_asm_line(text, "mov", register, "rbp")
+                        add_asm_line(text, "movzx", register[64], get_variable_rbp_reference(argument))
                         add_asm_line(text, "add", "rbp", abs(argument['rbp_diff'] + push_rbp_diff))
                 elif argument["type"] == "number":
-                    add_asm_line(text, "mov", register, argument["name"])
+                    add_asm_line(text, "mov", register[64], argument["name"])
             text.append("syscall")
             text.append("pop r11")
             text.append("pop rcx")

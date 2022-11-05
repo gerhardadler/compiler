@@ -8,15 +8,21 @@ from parser import parser
 from compiler import compiler
 
 code = """
-def print(u16 output, u32 length) {
+def print(u32 output, u16 length) {
     syscall(1, 1, @output, length);
 }
 
 def main() {
-    u16 gif = 65;
-    u16 y = 66;
-    print(y, 2);
-    print(10, 2);
+    u32 letter = 65;
+    u32 jump = 2;
+    print(letter, 4);
+    print(10, 1);
+    letter = letter + jump;
+    print(letter, 4);
+    print(10, 1);
+    letter = letter + jump + 1;
+    print(letter, 4);
+    print(10, 1);
 }
 """
 
