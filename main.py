@@ -8,21 +8,18 @@ from parser import parser
 from compiler import compiler
 
 code = """
-def print(u32 output, u16 length) {
-    syscall(1, 1, @output, length);
+def print(u64 value) {
+    syscall(1, 1, @value, 8);
 }
 
 def main() {
     u32 letter = 65;
-    u32 jump = 2;
-    print(letter, 4);
-    print(10, 1);
-    letter = letter + jump;
-    print(letter, 4);
-    print(10, 1);
-    letter = letter + jump + 1;
-    print(letter, 4);
-    print(10, 1);
+    print(letter);
+    letter = letter + 1;
+    print(letter);
+    letter = letter + 1;
+    print(letter);
+    print(10);
 }
 """
 

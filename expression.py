@@ -1,4 +1,4 @@
-from compiler import variable_operation_to_asm
+from compiler import create_asm
 from compiler import registers
 
 class Expression:
@@ -106,44 +106,30 @@ class Expression:
             print(left)
             print(right)
 
+            # text += create_asm(operator["asm"], left, right)
             if operator["type"] == "assignment_operator":
-                if right["type"] == "variable_name":
-                    text += variable_operation_to_asm("mov", left, "eax", 2)
-                    text += variable_operation_to_asm(operator["asm"], right, "eax", 1)
-                else:
-                    text += variable_operation_to_asm(operator["asm"], left, right["name"], 1)
+                text += create_asm(operator["asm"], left, right)
+                # print(text)
                 break
 
             if left["type"] != "register":
-                unused_register = unused_registers.pop()
-                left_register = {
-                    "name": unused_register[max(left.get("size", 0), right.get("size", 0))], # 0 is used as default as not all nodes have a size
-                    "type": "register",
-                    "full_name": unused_register[64]
-                }
-                if left["type"] == "variable_name":
-                    text += variable_operation_to_asm("mov", left, left_register["name"], 2)
-                elif left["type"] == "number":
-                    text.append(f"mov {left_register['name']}, {left['name']}")
-                else:
-                    exit("type not supported in expression code yet")
+                # unused_register = unused_registers.pop()
+                left_register = unused_registers.pop()
+                text += create_asm("mov", left_register, left)
                 left = left_register
             
-            if right["type"] == "variable_name":
-                unused_register = unused_registers.pop()
-                right_register = {
-                    "name": unused_register[max(left.get("size", 0), right.get("size", 0))], # 0 is used as default as not all nodes have a size
-                    "type": "register",
-                    "full_name": unused_register[64]
-                }
-                text += variable_operation_to_asm(operator["asm"], right, right_register["name"], 2)
-                right = right_register
-                unused_registers.append(unused_register)
+            # if right["type"] == "variable_name":
+            #     # unused_register = unused_registers.pop()
+            #     right_register = unused_registers.pop()
+            #     text += create_asm(operator["asm"], right_register["name"], right)
+            #     right = right_register
+            #     unused_registers.append(right_register)
 
-            text.append(f"{operator['asm']} {left['name']}, {right['name']}")
+            text += create_asm(operator["asm"], left, right)
+            # text.append(f"{operator['asm']} {left['name']}, {right['name']}")
 
-            if right["type"] == "register":
-                unused_registers.append(registers[right["full_name"]])
+            # if right["type"] == "register":
+            #     unused_registers.append(registers[right["full_name"]])
 
             expression.insert(index - 2, left)
 

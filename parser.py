@@ -1,4 +1,5 @@
 from expression import Expression
+from compiler import registers
 
 syntax_tree = []
 outer_scope_variables = [] # arguments
@@ -24,7 +25,7 @@ def stack_add_variable_info():
         if node["type"] == "variable_name":
             for scope_variable in inner_scope_variables + outer_scope_variables:
                 if node["name"] == scope_variable["name"]:
-                    stack[node_index] = scope_variable
+                    stack[node_index] = scope_variable.copy()
                     if stack[node_index - 1]["type"] == "address_of":
                         stack[node_index]["address_of"] = True
                         stack.pop(node_index - 1) # removes address_of specifier
@@ -43,6 +44,7 @@ def outer_scope_rbp_diff():
     rbp_diff = 0
     for variable in outer_scope_variables:
         rbp_diff += variable["size"]
+    rbp_diff += 128 # because rbp is shifted 128 bits
     rbp_diff //= 8
     return rbp_diff
 
@@ -80,7 +82,6 @@ def parse_variable_declaration():
 
     eval("syntax_tree " + current_block).append({
         "type": "variable_declaration",
-        "variable": variable,
         "expression": Expression(stack)
     })
 
@@ -151,51 +152,68 @@ def parse_function_call():
         exit("undeclared function name")
 
     stack_add_variable_info()
-    arguments = [node for node in stack if node["type"] not in ["comma", "round_bracket", "address_of"]]
-    print(arguments)
-    print(parameters)
+    arguments = []
+    arguments.append([])
+    for node in stack:
+        if node["type"] == "round_bracket":
+            continue
+        elif node["type"] == "comma":
+            arguments.append([])
+        else:
+            arguments[-1].append(node)
+
     if len(parameters) != len(arguments):
         exit("unmatching parameters and arguments")
     
-    scope_variables = inner_scope_variables + outer_scope_variables
     output_arguments = []
+    function_rsp_offset = -inner_scope_rbp_diff(0)
     for argument, parameter in zip(arguments, parameters):
-        arguments_size = 0
-        for output_argument in output_arguments:
-            arguments_size += output_argument["parameter_size"]
-        if argument["type"] == "variable_name":
-            for variable in scope_variables:
-                if variable["name"] == argument["name"]:
-                    output_arguments.append({
-                        "type": "variable_name",
-                        "name": variable["name"],
-                        "variable_type": variable["variable_type"],
-                        "address_of": False,
-                        "size": argument["size"],
-                        "size_specifier": size_to_specifier(argument["size"]),
-                        "rbp_diff": argument["rbp_diff"],
-                        "parameter_size": parameter["size"],
-                        "parameter_size_specifier": size_to_specifier(parameter["size"]),
-                        "argument_rbp_diff": inner_scope_rbp_diff(arguments_size + parameter["size"])
-                    })
-                    break
-            else: # if variable not in scope
-                exit("variable not declared")
-        elif argument["type"] == "number":
-            output_arguments.append({
-                "type": "number",
-                "name": argument["name"],
-                "parameter_size": parameter["size"],
-                "parameter_size_specifier": size_to_specifier(parameter["size"]),
-                "argument_rbp_diff": inner_scope_rbp_diff(arguments_size + parameter["size"])
-            })
-        else:
-            exit("type not supported for argument")
+        expression = argument
+        parameter["rbp_diff"] = inner_scope_rbp_diff(parameter["size"])
+        expression.insert(0, parameter)
+        expression.insert(1, {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"})
+        output_arguments.append({
+            "type": "argument_declaration",
+            "expression": Expression(expression)
+        })
+        function_rsp_offset += parameter["size"] // 8
+        # arguments_size = 0
+        # for output_argument in output_arguments:
+        #     arguments_size += output_argument["parameter_size"]
+        # if argument["type"] == "variable_name":
+        #     for variable in scope_variables:
+        #         if variable["name"] == argument["name"]:
+        #             output_arguments.append({
+        #                 "type": "variable_name",
+        #                 "name": variable["name"],
+        #                 "variable_type": variable["variable_type"],
+        #                 "address_of": False,
+        #                 "size": argument["size"],
+        #                 "size_specifier": size_to_specifier(argument["size"]),
+        #                 "rbp_diff": argument["rbp_diff"],
+        #                 "parameter_size": parameter["size"],
+        #                 "parameter_size_specifier": size_to_specifier(parameter["size"]),
+        #                 "argument_rbp_diff": inner_scope_rbp_diff(arguments_size + parameter["size"])
+        #             })
+        #             break
+        #     else: # if variable not in scope
+        #         exit("variable not declared")
+        # elif argument["type"] == "number":
+        #     output_arguments.append({
+        #         "type": "number",
+        #         "name": argument["name"],
+        #         "parameter_size": parameter["size"],
+        #         "parameter_size_specifier": size_to_specifier(parameter["size"]),
+        #         "argument_rbp_diff": inner_scope_rbp_diff(arguments_size + parameter["size"])
+        #     })
+        # else:
+        #     exit("type not supported for argument")
 
     eval("syntax_tree " + current_block).append({
         "type": "function_name",
         "name": function_name,
-        "arguments": output_arguments
+        "arguments": output_arguments,
+        "function_rsp_offset": function_rsp_offset
     })
 
 def parse_syscall():
@@ -206,25 +224,51 @@ def parse_syscall():
     arguments = []
 
     stack_add_variable_info()
-
+    arguments = []
+    arguments.append([])
     for node in stack:
-        if node["type"] in ["comma", "address_of"]:
+        if node["type"] == "round_bracket":
             continue
-        elif node["name"] == "(":
-            continue
-        elif node["name"] == ")":
-            break
-        elif node["type"] == "variable_name":
-            arguments.append(node)
-        elif node["type"] == "number":
-            arguments.append(node)
+        elif node["type"] == "comma":
+            arguments.append([])
         else:
-            exit("syntax error12")
-    else: # if no ending bracket
-        exit("syntax error13")
+            arguments[-1].append(node)
+    syscall_registers = [
+        registers["rax"],
+        registers["rdi"],
+        registers["rsi"],
+        registers["rdx"],
+        registers["r10"],
+        registers["r9"],
+        registers["r8"]
+    ]
+    output_arguments = []
+    for argument, syscall_register in zip(arguments, syscall_registers):
+        expression = argument
+        expression.insert(0, syscall_register)
+        expression.insert(1, {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"})
+        output_arguments.append({
+            "type": "argument_declaration",
+            "expression": Expression(expression)
+        })
+    # for node in stack:
+    #     if node["type"] in ["comma", "address_of"]:
+    #         continue
+    #     elif node["name"] == "(":
+    #         continue
+    #     elif node["name"] == ")":
+    #         break
+    #     elif node["type"] == "variable_name":
+    #         arguments.append(node)
+    #     elif node["type"] == "number":
+    #         arguments.append(node)
+    #     else:
+    #         exit("syntax error12")
+    # else: # if no ending bracket
+    #     exit("syntax error13")
     eval("syntax_tree " + current_block).append({
         "type": "syscall",
-        "arguments": arguments
+        "arguments": output_arguments
     })
 
 def parse_if():

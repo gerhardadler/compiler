@@ -1,4 +1,3 @@
-from lib2to3.pgen2 import token
 import re
 
 symbols = [
@@ -71,7 +70,7 @@ def str_is_number(str):
     except ValueError:
         return False
 
-def lexer(code):
+def lexer(code): # TODO symbols more than one character big doesnt work
     code = re.findall(r"[A-Za-z0-9_]+|\S", code)
 
     output_tokens = []
