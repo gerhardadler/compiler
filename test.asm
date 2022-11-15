@@ -24,55 +24,26 @@ mov rbp, rsp
 sub rbp, 4
 mov dword [rbp], 65
 add rbp, 4
+sub rbp, 5
+mov byte [rbp], 2
+add rbp, 5
+sub rbp, 5
+movzx eax, byte [rbp]
+add rbp, 5
 sub rbp, 4
-mov eax, dword [rbp]
+add dword [rbp], eax
 add rbp, 4
-sub rbp, 12
-mov qword [rbp], rax
-add rbp, 12
-sub rsp, 12
-call print
-add rsp, 12
 sub rbp, 4
 mov eax, dword [rbp]
 add rbp, 4
 mov r15, rax
 add r15, 1
-sub rbp, 4
-mov dword [rbp], r15d
-add rbp, 4
-sub rbp, 4
-mov eax, dword [rbp]
-add rbp, 4
-sub rbp, 12
-mov qword [rbp], rax
-add rbp, 12
-sub rsp, 12
+sub rbp, 13
+mov qword [rbp], r15
+add rbp, 13
+sub rsp, 13
 call print
-add rsp, 12
-sub rbp, 4
-mov eax, dword [rbp]
-add rbp, 4
-mov r15, rax
-add r15, 1
-sub rbp, 4
-mov dword [rbp], r15d
-add rbp, 4
-sub rbp, 4
-mov eax, dword [rbp]
-add rbp, 4
-sub rbp, 12
-mov qword [rbp], rax
-add rbp, 12
-sub rsp, 12
-call print
-add rsp, 12
-sub rbp, 12
-mov qword [rbp], 10
-add rbp, 12
-sub rsp, 12
-call print
-add rsp, 12
+add rsp, 13
 mov rsp, rbp
 pop rbp
 ret

@@ -14,12 +14,9 @@ def print(u64 value) {
 
 def main() {
     u32 letter = 65;
-    print(letter);
-    letter = letter + 1;
-    print(letter);
-    letter = letter + 1;
-    print(letter);
-    print(10);
+    u8 x = 2;
+    letter += x;
+    print(letter + 1);
 }
 """
 

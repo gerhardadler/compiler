@@ -1,6 +1,5 @@
 add pointers
 return from functions
-fix multiple letter symbols
 add if statements
 add while loops
 add arrays
