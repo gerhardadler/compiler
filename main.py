@@ -13,10 +13,7 @@ def print(u64 value) {
 }
 
 def main() {
-    u32 letter = 65;
-    u8 x = 2;
-    letter += x;
-    print(letter + 1);
+    u32 letter = print(3);
 }
 """
 

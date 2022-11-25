@@ -3,19 +3,18 @@ from compiler import registers
 
 class Expression:
     def __init__(self, infix_expression):
-        self.infix_expression = infix_expression
-        self.postfix_expression = self.create_postfix_from_infix()
+        self.postfix_expression = self.create_postfix(infix_expression)
         for token in self.postfix_expression:
             print(token["name"], end=" ")
         self.postfix_short()
 
-    def create_postfix_from_infix(self):
+    def create_postfix(self, infix_expression):
         # https://en.wikipedia.org/wiki/Shunting_yard_algorithm#The_algorithm_in_detail
         # https://dev.to/quantumsheep/how-calculators-read-mathematical-expression-with-operator-precedence-4n9h
         # https://en.wikipedia.org/wiki/Order_of_operations#Programming_languages
         output = []
         operators = []
-        for token in self.infix_expression:
+        for token in infix_expression:
             if "operator" in token["type"]: # if token is operator
                 for operator in reversed(operators):
                     if operator["name"] == "(":

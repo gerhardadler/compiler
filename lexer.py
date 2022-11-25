@@ -58,7 +58,7 @@ keywords = [
     
     {"name": "if", "type": "if"},
     {"name": "elif", "type": "elif"},
-    {"name": "def", "type": "function"},
+    {"name": "def", "type": "function_declaration"},
 
     {"name": "syscall", "type": "syscall"}
 ]

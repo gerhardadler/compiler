@@ -125,7 +125,7 @@ def compiler(syntax_tree, header=True):
             text += node["expression"].to_asm()["text"]
         elif node["type"] == "variable_assignment":
             text += node["expression"].to_asm()["text"]
-        elif node["type"] == "function":
+        elif node["type"] == "function_declaration":
             text.append(node["name"] + ":")
             text.append("push rbp")
             add_asm_line(text, "mov", "rbp", "rsp")
@@ -134,7 +134,7 @@ def compiler(syntax_tree, header=True):
             add_asm_line(text, "mov", "rsp", "rbp")
             text.append("pop rbp")
             text.append("ret")
-        elif node["type"] == "function_name":
+        elif node["type"] == "function_reference":
             for argument in node["arguments"]:
                 text += argument["expression"].to_asm()["text"]
             #     text += create_asm("mov", )
