@@ -10,10 +10,12 @@ from compiler import compiler
 code = """
 def print(u64 value) {
     syscall(1, 1, @value, 8);
+
+    ret 1;
 }
 
 def main() {
-    u32 letter = print(3);
+    u32 letter = print(65);
 }
 """
 

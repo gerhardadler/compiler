@@ -21,14 +21,8 @@ ret
 main:
 push rbp
 mov rbp, rsp
-sub rbp, 12
-mov qword [rbp], 3
-add rbp, 12
-sub rsp, 12
-call print
-add rsp, 12
 sub rbp, 4
-mov dword [rbp], 3
+mov dword [rbp], 5
 add rbp, 4
 mov rsp, rbp
 pop rbp

@@ -56,6 +56,13 @@ def create_asm(instruction, op1, op2):
                 output.append(apply_rbp_diff(op2))
                 op2 = registers["rbp"][op1["size"]]
                 output.append(unapply_rbp_diff(op2))
+        elif op2["type"] == "function_reference":
+            for argument in op2["arguments"]:
+                output += argument["expression"].to_asm()["text"]
+            add_asm_line(output, "sub", "rsp", abs(op2['function_rsp_offset']))
+            output.append("call " + op2["name"])
+            add_asm_line(output, "add", "rsp", abs(op2['function_rsp_offset']))
+            op2 = op2 = registers["rax"][op1["size"]]
         elif op2["type"] == "register":
             op2 = op2[op1["size"]]
         elif op2["type"] == "number":
@@ -84,6 +91,13 @@ def create_asm(instruction, op1, op2):
                 output.append(apply_rbp_diff(op2))
                 output.append(f"{instruction} {op1[64]}, {registers['rbp'][64]}")
                 output.append(unapply_rbp_diff(op2))
+        elif op2["type"] == "function_reference":
+            for argument in op2["arguments"]:
+                output += argument["expression"].to_asm()["text"]
+            add_asm_line(output, "sub", "rsp", abs(op2['function_rsp_offset']))
+            output.append("call " + op2["name"])
+            add_asm_line(output, "add", "rsp", abs(op2['function_rsp_offset']))
+            op2 = op2 = registers["rax"][op1["size"]]
         elif op2["type"] == "register":
             output.append(f"{instruction} {op1[64]}, {op2[64]}")
         elif op2["type"] == "number":

@@ -1,11 +1,28 @@
+from collections import UserList
 from expression import Expression
 from compiler import registers
 
-syntax_tree = []
+class SyntaxTree(UserList):
+    def __init__(self):
+        self.data = []
+        self.parent_blocks = []
+        self.current_block = self.data
+
+    def add_block(self, block):
+        self.parent_blocks.append(self.current_block)
+        self.current_block.append(block)
+        self.current_block = self.data[-1]["body"]
+
+    def step_down_block(self):
+        self.current_block = self.parent_blocks.pop()
+    
+    def add_node(self, node):
+        self.current_block.append(node)
+
+syntax_tree = SyntaxTree()
 outer_scope_variables = [] # arguments
 inner_scope_variables = [] # local variables
 functions = []
-current_block = ""
 stack = []
 
 def size_to_specifier(size):
@@ -47,7 +64,7 @@ def add_stack_info(stack):
                 function_nodes.append(function_node)
                 if (bracket_count == 0 and function_node["name"] == ")"):
                     break
-            stack.insert(i, parse_function_call(function_nodes)) # maybe infinite loop idkz
+            stack.insert(i, parse_function_reference(function_nodes))
         i += 1
     return stack
 
@@ -82,10 +99,8 @@ def create_variable_node(variable_type, variable_name, scope_rbp_diff):
     }
 
 def parse_variable_declaration(stack):
-    global syntax_tree
     global outer_scope_variables
     global inner_scope_variables
-    global current_block
     if stack[1]["type"] != "variable_name":
         exit("syntax error 1")
     if stack[2]["name"] != "=":
@@ -107,10 +122,8 @@ def parse_variable_declaration(stack):
     }
 
 def parse_variable_reference(stack):
-    global syntax_tree
     global outer_scope_variables
     global inner_scope_variables
-    global current_block
     if stack[1]["type"] != "assignment_operator":
         exit("syntax error4")
 
@@ -122,11 +135,9 @@ def parse_variable_reference(stack):
     }
 
 def parse_function_declaration(stack):
-    global syntax_tree
     global outer_scope_variables
     global inner_scope_variables
     global functions
-    global current_block
 
     outer_scope_variables = [] # resets outer variables (parameters)
 
@@ -153,14 +164,11 @@ def parse_function_declaration(stack):
         "body": []
     }
     functions.append(function)
-    current_block += '[-1]["body"]'
     inner_scope_variables = [] # resets inner variables
     return function
 
-def parse_function_call(stack):
-    global syntax_tree
+def parse_function_reference(stack):
     global functions
-    global current_block
     function_name = stack.pop(0)["name"]
     for function in functions:
         if function_name == function["name"]:
@@ -195,37 +203,6 @@ def parse_function_call(stack):
             "expression": Expression(expression)
         })
         function_rsp_offset += parameter["size"] // 8
-        # arguments_size = 0
-        # for output_argument in output_arguments:
-        #     arguments_size += output_argument["parameter_size"]
-        # if argument["type"] == "variable_name":
-        #     for variable in scope_variables:
-        #         if variable["name"] == argument["name"]:
-        #             output_arguments.append({
-        #                 "type": "variable_name",
-        #                 "name": variable["name"],
-        #                 "variable_type": variable["variable_type"],
-        #                 "address_of": False,
-        #                 "size": argument["size"],
-        #                 "size_specifier": size_to_specifier(argument["size"]),
-        #                 "rbp_diff": argument["rbp_diff"],
-        #                 "parameter_size": parameter["size"],
-        #                 "parameter_size_specifier": size_to_specifier(parameter["size"]),
-        #                 "argument_rbp_diff": inner_scope_rbp_diff(arguments_size + parameter["size"])
-        #             })
-        #             break
-        #     else: # if variable not in scope
-        #         exit("variable not declared")
-        # elif argument["type"] == "number":
-        #     output_arguments.append({
-        #         "type": "number",
-        #         "name": argument["name"],
-        #         "parameter_size": parameter["size"],
-        #         "parameter_size_specifier": size_to_specifier(parameter["size"]),
-        #         "argument_rbp_diff": inner_scope_rbp_diff(arguments_size + parameter["size"])
-        #     })
-        # else:
-        #     exit("type not supported for argument")
 
     return {
         "type": "function_reference",
@@ -234,9 +211,15 @@ def parse_function_call(stack):
         "function_rsp_offset": function_rsp_offset
     }
 
+def parse_return(stack):
+    stack = add_stack_info(stack)
+
+    return {
+        "type": "return",
+        "expression": Expression(stack)
+    }
+
 def parse_syscall(stack):
-    global syntax_tree
-    global current_block
     stack.pop(0) # gets rid of the syscall keyword
     arguments = []
 
@@ -268,35 +251,17 @@ def parse_syscall(stack):
             "type": "argument_declaration",
             "expression": Expression(expression)
         })
-    # for node in stack:
-    #     if node["type"] in ["comma", "address_of"]:
-    #         continue
-    #     elif node["name"] == "(":
-    #         continue
-    #     elif node["name"] == ")":
-    #         break
-    #     elif node["type"] == "variable_name":
-    #         arguments.append(node)
-    #     elif node["type"] == "number":
-    #         arguments.append(node)
-    #     else:
-    #         exit("syntax error12")
-    # else: # if no ending bracket
-    #     exit("syntax error13")
     return {
         "type": "syscall",
         "arguments": output_arguments
     }
 
 def parse_if(stack):
-    global syntax_tree
     global outer_scope_variables
     global inner_scope_variables
-    global current_block
 
     stack = add_stack_info(stack)
 
-    current_block += '[-1]["body"]'
     return {
         "type": "if",
         "expression": Expression(stack),
@@ -307,24 +272,25 @@ def parser(tokens):
     global syntax_tree
     global outer_scope_variables
     global inner_scope_variables
-    global current_block
     global stack
     for token in tokens:
         if token["type"] in ["semicolon", "curly_bracket"]:
             if token["name"] == "}":
-                current_block = current_block[0:-12]
+                syntax_tree.step_down_block()
             elif stack[0]["type"] == "type_declaration":
-                eval("syntax_tree " + current_block).append(parse_variable_declaration(stack))
+                syntax_tree.add_node(parse_variable_declaration(stack))
             elif stack[0]["type"] == "variable_name":
-                eval("syntax_tree " + current_block).append(parse_variable_reference(stack))
+                syntax_tree.add_node(parse_variable_reference(stack))
             elif stack[0]["type"] == "function_declaration":
-                eval("syntax_tree " + current_block).append(parse_function_declaration(stack))
+                syntax_tree.add_block(parse_function_declaration(stack))
             elif stack[0]["type"] == "function_name":
-                eval("syntax_tree " + current_block).append(parse_function_call(stack))
+                syntax_tree.add_node(parse_function_reference(stack))
+            elif stack[0]["type"] == "return":
+                syntax_tree.add_node(parse_return(stack))
             elif stack[0]["type"] == "syscall":
-                eval("syntax_tree " + current_block).append(parse_syscall(stack))
+                syntax_tree.add_node(parse_syscall(stack))
             elif stack[0]["type"] == "if":
-                eval("syntax_tree " + current_block).append(parse_if(stack))
+                syntax_tree.add_block(parse_if(stack))
             stack = []
         else:
             stack.append(token)
