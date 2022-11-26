@@ -1,5 +1,3 @@
-import re
-
 symbols = [
     # logical operators
     {"name": "&&", "type": "logical_operator", "precedence": 10, "associativity": "left_to_right"},

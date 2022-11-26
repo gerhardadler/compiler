@@ -1,3 +1,4 @@
+maybe take assignment out of expression
 add pointers
 return from functions
 add if statements

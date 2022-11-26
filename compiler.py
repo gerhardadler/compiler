@@ -145,24 +145,13 @@ def compiler(syntax_tree, header=True):
             add_asm_line(text, "mov", "rbp", "rsp")
             text += compiler(node["body"], header=False)["text"]
 
+            text += node["return"].to_asm()["text"]
             add_asm_line(text, "mov", "rsp", "rbp")
             text.append("pop rbp")
             text.append("ret")
         elif node["type"] == "function_reference":
             for argument in node["arguments"]:
                 text += argument["expression"].to_asm()["text"]
-            #     text += create_asm("mov", )
-            #     if argument["type"] == "variable_name":
-            #         rax_register = registers["rax"]
-            #         text += create_asm("mov", rax_register, argument)
-            #         add_asm_line(text, "sub", "rbp", abs(argument['argument_rbp_diff']))
-            #         add_asm_line(text, "mov", f"{argument['parameter_size_specifier']} [rbp]", rax_register[64])
-            #         add_asm_line(text, "add", "rbp", abs(argument['argument_rbp_diff']))
-            #     elif argument["type"] == "number":
-            #         add_asm_line(text, "sub", "rbp", abs(argument['argument_rbp_diff']))
-            #         add_asm_line(text, "mov", f"{argument['parameter_size_specifier']} [rbp]", argument['name'])
-            #         add_asm_line(text, "add", "rbp", abs(argument['argument_rbp_diff']))
-            # add_asm_line(text, "sub", "rsp", abs(argument['argument_rbp_diff']))
             add_asm_line(text, "sub", "rsp", abs(node['function_rsp_offset']))
             text.append("call " + node["name"])
             add_asm_line(text, "add", "rsp", abs(node['function_rsp_offset']))

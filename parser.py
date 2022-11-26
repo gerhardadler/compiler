@@ -23,6 +23,7 @@ syntax_tree = SyntaxTree()
 outer_scope_variables = [] # arguments
 inner_scope_variables = [] # local variables
 functions = []
+current_function = None
 stack = []
 
 def size_to_specifier(size):
@@ -138,6 +139,7 @@ def parse_function_declaration(stack):
     global outer_scope_variables
     global inner_scope_variables
     global functions
+    global current_function
 
     outer_scope_variables = [] # resets outer variables (parameters)
 
@@ -161,9 +163,11 @@ def parse_function_declaration(stack):
         "type": "function_declaration",
         "name": function_name,
         "parameters": outer_scope_variables,
-        "body": []
+        "body": [],
+        "return": Expression([registers["rax"], {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"}, {"type": "number", "name": "0"}])
     }
     functions.append(function)
+    current_function = function
     inner_scope_variables = [] # resets inner variables
     return function
 
@@ -179,28 +183,32 @@ def parse_function_reference(stack):
 
     stack = add_stack_info(stack)
     arguments = []
-    arguments.append([])
     for node in stack:
         if node["type"] == "round_bracket":
             continue
         elif node["type"] == "comma":
             arguments.append([])
         else:
+            if len(arguments) == 0:
+                arguments.append([])
             arguments[-1].append(node)
 
+    print(parameters)
+    print(arguments)
     if len(parameters) != len(arguments):
         exit("unmatching parameters and arguments")
     
     output_arguments = []
     function_rsp_offset = -inner_scope_rbp_diff(0)
+    parameter_sizes = 0
     for argument, parameter in zip(arguments, parameters):
-        expression = argument
-        parameter["rbp_diff"] = inner_scope_rbp_diff(parameter["size"])
-        expression.insert(0, parameter)
-        expression.insert(1, {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"})
+        parameter_sizes += parameter["size"]
+        parameter["rbp_diff"] = inner_scope_rbp_diff(parameter_sizes)
+        argument.insert(0, parameter)
+        argument.insert(1, {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"})
         output_arguments.append({
             "type": "argument_declaration",
-            "expression": Expression(expression)
+            "expression": Expression(argument)
         })
         function_rsp_offset += parameter["size"] // 8
 
@@ -211,13 +219,11 @@ def parse_function_reference(stack):
         "function_rsp_offset": function_rsp_offset
     }
 
-def parse_return(stack):
+def add_return(stack, function):
+    stack.pop(0) # gets rid of return keyword
     stack = add_stack_info(stack)
 
-    return {
-        "type": "return",
-        "expression": Expression(stack)
-    }
+    function["return"] = Expression([registers["rax"], {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"}] + stack)
 
 def parse_syscall(stack):
     stack.pop(0) # gets rid of the syscall keyword
@@ -273,6 +279,7 @@ def parser(tokens):
     global outer_scope_variables
     global inner_scope_variables
     global stack
+    global current_function
     for token in tokens:
         if token["type"] in ["semicolon", "curly_bracket"]:
             if token["name"] == "}":
@@ -286,7 +293,7 @@ def parser(tokens):
             elif stack[0]["type"] == "function_name":
                 syntax_tree.add_node(parse_function_reference(stack))
             elif stack[0]["type"] == "return":
-                syntax_tree.add_node(parse_return(stack))
+                add_return(stack, current_function)
             elif stack[0]["type"] == "syscall":
                 syntax_tree.add_node(parse_syscall(stack))
             elif stack[0]["type"] == "if":
