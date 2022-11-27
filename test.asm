@@ -8,32 +8,32 @@ syscall
 print:
 push rbp
 mov rbp, rsp
-mov r15, 1
-mov rax, r15
-mov r15, 1
-mov rdi, r15
+mov rax, 1
+mov rdi, 1
 add rbp, 16
 mov r15, rbp
 sub rbp, 16
 mov rsi, r15
-mov r15, 8
-mov rdx, r15
+mov rdx, 8
 syscall
-mov r15, 0
-mov rax, r15
+mov rax, 0
+print_ret:
 mov rsp, rbp
 pop rbp
 ret
 main:
 push rbp
 mov rbp, rsp
-mov r15, 3
-add r15, 2
 sub rbp, 4
-mov dword [rbp], r15d
+mov dword [rbp], 1
 add rbp, 4
-mov r15, 0
-mov rax, r15
+sub rbp, 8
+mov dword [rbp], 2
+add rbp, 8
+mov rax, 0
+jmp main_ret
+mov rax, 0
+main_ret:
 mov rsp, rbp
 pop rbp
 ret

@@ -103,8 +103,6 @@ def create_asm(instruction, op1, op2):
         elif op2["type"] == "number":
             output.append(f"{instruction} {op1[64]}, {op2['name']}")
         else:
-            print(op1)
-            print(op2)
             exit("not supported type")
     else:
         exit("not supported type")
@@ -151,9 +149,8 @@ def compiler(syntax_tree, header=True):
             add_asm_line(text, "mov", "rbp", "rsp")
             text += compiler(node["body"], header=False)["text"]
 
-            return_asm = node["return"].to_asm()
-            text += return_asm["text"]
-            text += create_asm("mov", registers["rax"], return_asm["value"])
+            add_asm_line(text, "mov", "rax", "0")
+            text.append(f"{node['name']}_ret:") # label for returning
             add_asm_line(text, "mov", "rsp", "rbp")
             text.append("pop rbp")
             text.append("ret")
@@ -165,6 +162,11 @@ def compiler(syntax_tree, header=True):
             add_asm_line(text, "sub", "rsp", abs(node['function_rsp_offset']))
             text.append("call " + node["name"])
             add_asm_line(text, "add", "rsp", abs(node['function_rsp_offset']))
+        elif node["type"] == "return":
+            return_asm = node["expression"].to_asm()
+            text += return_asm["text"]
+            text += create_asm("mov", registers["rax"], return_asm["value"])
+            text.append(f"jmp {node['current_function_name']}_ret")
         elif node["type"] == "syscall": # https://stackoverflow.com/a/2538212/12834165
             for argument in node["arguments"]:
                 argument_asm = argument["expression"].to_asm()

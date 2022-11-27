@@ -1,6 +1,5 @@
-maybe take assignment out of expression
+oops returns are stupid
 add pointers
-return from functions
 add if statements
 add while loops
 add arrays

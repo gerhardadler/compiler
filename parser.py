@@ -169,8 +169,7 @@ def parse_function_declaration(stack):
         "type": "function_declaration",
         "name": function_name,
         "parameters": outer_scope_variables,
-        "body": [],
-        "return": Expression([{"type": "number", "name": "0"}])
+        "body": []
     }
     functions.append(function)
     current_function = function
@@ -224,11 +223,18 @@ def parse_function_reference(stack):
         "function_rsp_offset": function_rsp_offset
     }
 
-def add_return(stack, function):
+def parse_return(stack, function_name):
     stack.pop(0) # gets rid of return keyword
-    stack = add_stack_info(stack)
+    if len(stack) == 0:
+        stack = [{"type": "number", "name": "0"}]
+    else:
+        stack = add_stack_info(stack)
 
-    function["return"] = Expression(stack)
+    return {
+        "type": "return",
+        "expression": Expression(stack),
+        "current_function_name": function_name
+    }
 
 def parse_syscall(stack):
     stack.pop(0) # gets rid of the syscall keyword
@@ -297,7 +303,7 @@ def parser(tokens):
             elif stack[0]["type"] == "function_name":
                 syntax_tree.add_node(parse_function_reference(stack))
             elif stack[0]["type"] == "return":
-                add_return(stack, current_function)
+                syntax_tree.add_node(parse_return(stack, current_function["name"]))
             elif stack[0]["type"] == "syscall":
                 syntax_tree.add_node(parse_syscall(stack))
             elif stack[0]["type"] == "if":

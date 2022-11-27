@@ -134,7 +134,7 @@ class Expression:
             left
         except NameError: # left isn't defined
             left = expression.pop()
-            if left["type"] != "register":
+            if left["type"] == "variable_name":
                 left_register = unused_registers.pop()
                 text += create_asm("mov", left_register, left)
                 left = left_register
