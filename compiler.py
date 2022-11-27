@@ -132,7 +132,7 @@ def compiler(syntax_tree, header=True):
     bss = []
     text = []
     if header == True:
-        text += ["section .text", "global _start", "_start:", "call main", "mov rax, 60", "mov rdi, 0", "syscall"]
+        text += ["section .text", "global _start", "_start:", "call main", "mov rdi, rax", "mov rax, 60", "syscall"]
 
     for node in syntax_tree:
         if node["type"] == "variable_declaration":

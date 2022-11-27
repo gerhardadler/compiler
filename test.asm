@@ -2,8 +2,8 @@ section .text
 global _start
 _start:
 call main
+mov rdi, rax
 mov rax, 60
-mov rdi, 0
 syscall
 print:
 push rbp
@@ -24,13 +24,7 @@ ret
 main:
 push rbp
 mov rbp, rsp
-sub rbp, 4
-mov dword [rbp], 1
-add rbp, 4
-sub rbp, 8
-mov dword [rbp], 2
-add rbp, 8
-mov rax, 0
+mov rax, 69
 jmp main_ret
 mov rax, 0
 main_ret:

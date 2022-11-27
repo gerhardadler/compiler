@@ -6,7 +6,7 @@ class Expression:
         self.postfix_expression = self.create_postfix(infix_expression)
         for token in self.postfix_expression:
             print(token["name"], end=" ")
-        # self.postfix_short()
+        self.postfix_short()
 
     def create_postfix(self, infix_expression):
         # https://en.wikipedia.org/wiki/Shunting_yard_algorithm#The_algorithm_in_detail

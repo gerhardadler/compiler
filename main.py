@@ -13,9 +13,7 @@ def print(u64 value) {
 }
 
 def main() {
-    u32 x = 1;
-    u32 y = 2;
-    ret;
+    ret 69;
 }
 """
 
