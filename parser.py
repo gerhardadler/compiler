@@ -104,13 +104,12 @@ def parse_variable_declaration(stack):
     global inner_scope_variables
     if stack[1]["type"] != "variable_name":
         exit("syntax error 1")
-    if stack[2]["name"] != "=":
+    if stack[2]["type"] != "assignment_operator":
         exit("syntax error 2")
-    if stack[3]["type"] not in ["number", "variable_name", "round_bracket", "function_name"]:
-        exit("syntax error 3")
 
     variable_type = stack.pop(0)
-    variable_name = stack[0]["name"]
+    variable_name = stack.pop(0)["name"]
+    assignment_operator = stack.pop(0)
 
     variable = create_variable_node(variable_type, variable_name, inner_scope_rbp_diff(variable_type["size"]))
     inner_scope_variables.append(variable)
@@ -119,6 +118,8 @@ def parse_variable_declaration(stack):
 
     return {
         "type": "variable_declaration",
+        "variable": variable,
+        "assignment_operator": assignment_operator,
         "expression": Expression(stack)
     }
 
@@ -130,7 +131,12 @@ def parse_variable_reference(stack):
 
     stack = add_stack_info(stack)
 
+    variable = stack.pop(0)
+    assignment_operator = stack.pop(0)
+
     return {
+        "variable": variable,
+        "assignment_operator": assignment_operator,
         "type": "variable_assignment",
         "expression": Expression(stack)
     }
@@ -164,7 +170,7 @@ def parse_function_declaration(stack):
         "name": function_name,
         "parameters": outer_scope_variables,
         "body": [],
-        "return": Expression([registers["rax"], {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"}, {"type": "number", "name": "0"}])
+        "return": Expression([{"type": "number", "name": "0"}])
     }
     functions.append(function)
     current_function = function
@@ -204,10 +210,9 @@ def parse_function_reference(stack):
     for argument, parameter in zip(arguments, parameters):
         parameter_sizes += parameter["size"]
         parameter["rbp_diff"] = inner_scope_rbp_diff(parameter_sizes)
-        argument.insert(0, parameter)
-        argument.insert(1, {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"})
         output_arguments.append({
             "type": "argument_declaration",
+            "variable": parameter,
             "expression": Expression(argument)
         })
         function_rsp_offset += parameter["size"] // 8
@@ -223,7 +228,7 @@ def add_return(stack, function):
     stack.pop(0) # gets rid of return keyword
     stack = add_stack_info(stack)
 
-    function["return"] = Expression([registers["rax"], {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"}] + stack)
+    function["return"] = Expression(stack)
 
 def parse_syscall(stack):
     stack.pop(0) # gets rid of the syscall keyword
@@ -251,10 +256,9 @@ def parse_syscall(stack):
     output_arguments = []
     for argument, syscall_register in zip(arguments, syscall_registers):
         expression = argument
-        expression.insert(0, syscall_register)
-        expression.insert(1, {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"})
         output_arguments.append({
             "type": "argument_declaration",
+            "syscall_register": syscall_register,
             "expression": Expression(expression)
         })
     return {
@@ -262,7 +266,7 @@ def parse_syscall(stack):
         "arguments": output_arguments
     }
 
-def parse_if(stack):
+def parse_if(stack): # doesnt work at all
     global outer_scope_variables
     global inner_scope_variables
 

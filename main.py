@@ -12,12 +12,8 @@ def print(u64 value) {
     syscall(1, 1, @value, 8);
 }
 
-def add(u32 x, u32 y) {
-    ret x + y;
-}
-
 def main() {
-    main();
+    u32 x = 3 + 2;
 }
 """
 

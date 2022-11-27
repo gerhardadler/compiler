@@ -6,7 +6,7 @@ class Expression:
         self.postfix_expression = self.create_postfix(infix_expression)
         for token in self.postfix_expression:
             print(token["name"], end=" ")
-        self.postfix_short()
+        # self.postfix_short()
 
     def create_postfix(self, infix_expression):
         # https://en.wikipedia.org/wiki/Shunting_yard_algorithm#The_algorithm_in_detail
@@ -76,7 +76,7 @@ class Expression:
                 break # breaks outer while loop
 
     def to_asm(self):
-        expression = self.postfix_expression
+        expression = self.postfix_expression.copy()
         data = []
         bss = []
         text = []
@@ -92,24 +92,21 @@ class Expression:
         ]
 
         # self.postfix_expression to asm
-        while True: # While there still are operators in self.postfix_expression
+        while len(expression) > 1: # While there still are operators in self.postfix_expression
             for index, token in enumerate(expression):
-                if token["type"] in ["arithmetic_operator", "assignment_operator"]:
+                if token["type"] in ["arithmetic_operator"]:
                     break
-            else: # nobreak if no more operators
-                break
+            else:
+                exit("shocker innit")
             operator = expression.pop(index)
             right = expression.pop(index - 1)
             left = expression.pop(index - 2)
 
-            print(left)
-            print(right)
-
             # text += create_asm(operator["asm"], left, right)
-            if operator["type"] == "assignment_operator":
-                text += create_asm(operator["asm"], left, right)
-                # print(text)
-                break
+            # if operator["type"] == "assignment_operator":
+            #     text += create_asm(operator["asm"], left, right)
+            #     # print(text)
+            #     break
 
             if left["type"] != "register":
                 # unused_register = unused_registers.pop()
@@ -131,9 +128,20 @@ class Expression:
             #     unused_registers.append(registers[right["full_name"]])
 
             expression.insert(index - 2, left)
+        
+        # in case expression has a length of 1
+        try:
+            left
+        except NameError: # left isn't defined
+            left = expression.pop()
+            if left["type"] != "register":
+                left_register = unused_registers.pop()
+                text += create_asm("mov", left_register, left)
+                left = left_register
 
         return {
             "data": data,
             "bss": bss,
-            "text": text
+            "text": text,
+            "value": left
         }
