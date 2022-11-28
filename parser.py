@@ -11,7 +11,7 @@ class SyntaxTree(UserList):
     def add_block(self, block):
         self.parent_blocks.append(self.current_block)
         self.current_block.append(block)
-        self.current_block = self.data[-1]["body"]
+        self.current_block = self.current_block[-1]["body"]
 
     def step_down_block(self):
         self.current_block = self.parent_blocks.pop()
@@ -135,9 +135,9 @@ def parse_variable_reference(stack):
     assignment_operator = stack.pop(0)
 
     return {
+        "type": "variable_assignment",
         "variable": variable,
         "assignment_operator": assignment_operator,
-        "type": "variable_assignment",
         "expression": Expression(stack)
     }
 

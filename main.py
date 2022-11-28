@@ -13,7 +13,11 @@ def print(u64 value) {
 }
 
 def main() {
-    ret 69;
+    u32 x = 1;
+    u32 y = 2;
+    if x == 1 {
+        y = 3;
+    }
 }
 """
 
