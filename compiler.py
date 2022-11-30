@@ -109,24 +109,6 @@ def create_asm(instruction, op1, op2):
     print(output)
     return output
 
-# def variable_operation_to_asm(instruction, variable, op, variable_spot, rbp_offset = 0):
-#         output = []
-#         if variable["rbp_diff"] >= 0:
-#             add_asm_line(output, "add", "rbp", variable['rbp_diff'] + rbp_offset)
-#             if variable_spot == 1:
-#                 add_asm_line(output, instruction, get_variable_rbp_reference(variable), op)
-#             else:
-#                 add_asm_line(output, instruction, op, get_variable_rbp_reference(variable))
-#             add_asm_line(output, "sub", "rbp", variable['rbp_diff'] + rbp_offset)
-#         else:
-#             add_asm_line(output, "sub", "rbp", variable['rbp_diff'] + rbp_offset)
-#             if variable_spot == 1:
-#                 add_asm_line(output, instruction, get_variable_rbp_reference(variable), op)
-#             else:
-#                 add_asm_line(output, instruction, op, get_variable_rbp_reference(variable))
-#             add_asm_line(output, "add", "rbp", variable['rbp_diff'] + rbp_offset)
-#         return output
-
 def compiler(syntax_tree, header=True):
     data = []
     bss = []
@@ -172,29 +154,10 @@ def compiler(syntax_tree, header=True):
                 argument_asm = argument["expression"].to_asm()
                 text += argument_asm["text"]
                 text += create_asm("mov", argument["syscall_register"], argument_asm["value"])
-            # syscall_registers = [
-            #     registers["rax"],
-            #     registers["rdi"],
-            #     registers["rsi"],
-            #     registers["rdx"],
-            #     registers["r10"],
-            #     registers["r9"],
-            #     registers["r8"]
-            # ]
-            # for register, argument in list(zip(syscall_registers, node["arguments"])):
-            #     if argument["type"] == "variable_name":
-            #         push_rbp_diff = 16
-            #         if argument["rbp_diff"] >= 0:
-            #             add_asm_line(text, "add", "rbp", argument['rbp_diff'] + push_rbp_diff)
-            #             add_asm_line(text, "mov", register[64], get_variable_rbp_reference(argument)) # issues with movzx
-            #             add_asm_line(text, "sub", "rbp", argument['rbp_diff'] + push_rbp_diff)
-            #         else:
-            #             add_asm_line(text, "sub", "rbp", abs(argument['rbp_diff'] + push_rbp_diff))
-            #             add_asm_line(text, "movzx", register[64], get_variable_rbp_reference(argument))
-            #             add_asm_line(text, "add", "rbp", abs(argument['rbp_diff'] + push_rbp_diff))
-            #     elif argument["type"] == "number":
-            #         add_asm_line(text, "mov", register[64], argument["name"])
             text.append("syscall")
+        elif node["type"] == "if":
+            if_expression = node["expression"].to_asm()
+            text += if_expression["text"]
     
     return {
         "data": data,

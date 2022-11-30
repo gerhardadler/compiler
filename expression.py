@@ -94,7 +94,7 @@ class Expression:
         # self.postfix_expression to asm
         while len(expression) > 1: # While there still are operators in self.postfix_expression
             for index, token in enumerate(expression):
-                if token["type"] in ["arithmetic_operator", "comparison_operator"]: # YOU ARE ADDING COMPARISON OPERATORS
+                if token["type"] in ["arithmetic_operator", "comparison_operator"]:
                     break
             else:
                 exit("shocker innit")

@@ -272,11 +272,14 @@ def parse_syscall(stack):
         "arguments": output_arguments
     }
 
-def parse_if(stack): # doesnt work at all
+def parse_if(stack):
     global outer_scope_variables
     global inner_scope_variables
 
+    stack.pop(0) # removes if
+
     stack = add_stack_info(stack)
+
 
     return {
         "type": "if",
