@@ -1,16 +1,54 @@
+from dataclasses import dataclass
+from enum import Enum, auto
+
+
+class Associativity(Enum):
+    LEFT_TO_RIGHT = auto()
+    RIGHT_TO_LEFT = auto()
+
+
+class Type(Enum):
+    LOGICAL_OPERATOR = auto()
+    BITWISE_OPERATOR = auto()
+    COMPARISON_OPERATOR = auto()
+    ARITHMETIC_OPERATOR = auto()
+    ASSIGNMENT_OPERATOR = auto()
+
+
+@dataclass
+class Symbol:
+    name: str
+    type: Type
+
+
+@dataclass
+class Operator:
+    type: Type
+    name: str
+    precedence: int
+    associativity: Associativity
+    asm: str
+
+
 symbols = [
     # logical operators
-    {"name": "&&", "type": "logical_operator", "precedence": 10, "associativity": "left_to_right"},
-    {"name": "||", "type": "logical_operator", "precedence": 11, "associativity": "left_to_right"},
+    Operator(Type.LOGICAL_OPERATOR, "&&", 10, Associativity.LEFT_TO_RIGHT, "no"),
+    Operator(Type.LOGICAL_OPERATOR, "||", 11, Associativity.LEFT_TO_RIGHT, "no"),
 
     # bitwise operators
-    {"name": "<<", "type": "bitwise_operator", "precedence": 4, "associativity": "left_to_right", "asm": "shl"},
-    {"name": ">>", "type": "bitwise_operator", "precedence": 4, "associativity": "left_to_right", "asm": "shr"},
-    {"name": "&", "type": "bitwise_operator", "precedence": 7, "associativity": "left_to_right", "asm": "and"},
-    {"name": "^", "type": "bitwise_operator", "precedence": 8, "associativity": "left_to_right", "asm": "xor"},
-    {"name": "|", "type": "bitwise_operator", "precedence": 9, "associativity": "left_to_right", "asm": "or"},
+    Operator(Type.BITWISE_OPERATOR, "<<", 4, Associativity.LEFT_TO_RIGHT, "shl"),
+    Operator(Type.BITWISE_OPERATOR, ">>", 4, Associativity.LEFT_TO_RIGHT, "shr"),
+    Operator(Type.BITWISE_OPERATOR, "&", 7, Associativity.LEFT_TO_RIGHT, "and"),
+    Operator(Type.BITWISE_OPERATOR, "^", 8, Associativity.LEFT_TO_RIGHT, "xor"),
+    Operator(Type.BITWISE_OPERATOR, "|", 9, Associativity.LEFT_TO_RIGHT, "or"),
 
     # comparison operators
+    Operator(Type.COMPARISON_OPERATOR, "==", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
+    Operator(Type.COMPARISON_OPERATOR, "!=", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
+    Operator(Type.COMPARISON_OPERATOR, "<", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
+    Operator(Type.COMPARISON_OPERATOR, ">", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
+    Operator(Type.COMPARISON_OPERATOR, "<=", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
+    Operator(Type.COMPARISON_OPERATOR, ">=", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
     {"name": "==", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "asm": "cmp"},
     {"name": "!=", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "asm": "cmp"},
     {"name": "<", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "asm": "cmp"},

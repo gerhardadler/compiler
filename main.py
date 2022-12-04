@@ -4,7 +4,7 @@ import json
 import jsons
 
 from lexer import lexer
-from parser import parser
+from token_parser import token_parser
 from compiler import compiler
 
 code = """
@@ -23,7 +23,7 @@ def main() {
 
 lexed_code = lexer(code)
 print(*lexed_code, sep="\n")
-syntax_tree = parser(lexed_code)
+syntax_tree = token_parser(lexed_code)
 # print(syntax_tree)
 
 # ugly way to print syntax tree, but just for testing

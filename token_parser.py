@@ -287,7 +287,7 @@ def parse_if(stack):
         "body": []
     }
 
-def parser(tokens):
+def token_parser(tokens):
     global syntax_tree
     global outer_scope_variables
     global inner_scope_variables
