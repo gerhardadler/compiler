@@ -32,13 +32,13 @@ for line_number, line in enumerate(code.split("\n")):
         current_scope += '[-1]["code"]'
     elif line[0] == "uint":
         eval(current_scope).append({
-            "type": "set_variable",
+            "type": "set_var",
             "name": line[1],
             "expression": line[3]
         })
     else:
         eval(current_scope).append({
-            "type": "update_variable",
+            "type": "update_var",
             "expression": Expression(line)
         })
 print(syntax_tree)
@@ -63,9 +63,9 @@ code_operator_lookup = {
 }
 
 for node in syntax_tree:
-    if node["type"] == "set_variable":
+    if node["type"] == "set_var":
         data.append(f"{node['name']} dd {node['expression']}")
-    elif node["type"] == "update_variable":
+    elif node["type"] == "update_var":
         node["expression"] = Expression("x = 4 - y * 3 + ( z + 2 ) * 4".split())
         data, bss, text = node["expression"].to_asm()
 

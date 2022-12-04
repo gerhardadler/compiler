@@ -1,10 +1,9 @@
 from os import system
 
 import json
-import jsons
 
 from lexer import lexer
-from token_parser import token_parser
+#from token_parser import token_parser
 from compiler import compiler
 
 code = """
@@ -27,7 +26,7 @@ syntax_tree = token_parser(lexed_code)
 # print(syntax_tree)
 
 # ugly way to print syntax tree, but just for testing
-print(json.dumps(jsons.dump(syntax_tree, strip_privates=True), indent=2))
+# print(json.dumps(jsons.dump(syntax_tree, strip_privates=True), indent=2))
 
 asm = compiler(syntax_tree)
 

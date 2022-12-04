@@ -20,22 +20,22 @@ registers = {
 def add_asm_line(text, instruction, op1, op2):
     text.append(f"{instruction} {op1}, {op2}")
 
-def apply_rbp_diff(variable):
-    return f"{'add' if variable['rbp_diff'] >= 0 else 'sub'} rbp, {abs(variable['rbp_diff'])}"
+def apply_rbp_diff(var):
+    return f"{'add' if var['rbp_diff'] >= 0 else 'sub'} rbp, {abs(var['rbp_diff'])}"
 
-def unapply_rbp_diff(variable):
-    return f"{'sub' if variable['rbp_diff'] >= 0 else 'add'} rbp, {abs(variable['rbp_diff'])}"
+def unapply_rbp_diff(var):
+    return f"{'sub' if var['rbp_diff'] >= 0 else 'add'} rbp, {abs(var['rbp_diff'])}"
 
-def get_variable_rbp_reference(variable): # returns a string depending on if variable has "address_of"=True
-    if variable["address_of"] is True:
+def get_var_rbp_reference(var): # returns a string depending on if var has "address_of"=True
+    if var["address_of"] is True:
         return "rbp"
     else:
-        return f"{variable['size_specifier']} [rbp]"
+        return f"{var['size_specifier']} [rbp]"
 
 def create_asm(instruction, op1, op2):
     output = []
-    if op1["type"] == "variable_name":
-        if op2["type"] == "variable_name":
+    if op1["type"] == "var_name":
+        if op2["type"] == "var_name":
             if op2["address_of"] == False:
                 output.append(apply_rbp_diff(op2))
                 if op1["size"] == 64 and op2["size"] == 32: # https://stackoverflow.com/questions/11177137/why-do-x86-64-instructions-on-32-bit-registers-zero-the-upper-part-of-the-full-6
@@ -56,12 +56,12 @@ def create_asm(instruction, op1, op2):
                 output.append(apply_rbp_diff(op2))
                 op2 = registers["rbp"][op1["size"]]
                 output.append(unapply_rbp_diff(op2))
-        elif op2["type"] == "function_reference":
+        elif op2["type"] == "func_reference":
             for argument in op2["arguments"]:
                 output += argument["expression"].to_asm()["text"]
-            add_asm_line(output, "sub", "rsp", abs(op2['function_rsp_offset']))
+            add_asm_line(output, "sub", "rsp", abs(op2['func_rsp_offset']))
             output.append("call " + op2["name"])
-            add_asm_line(output, "add", "rsp", abs(op2['function_rsp_offset']))
+            add_asm_line(output, "add", "rsp", abs(op2['func_rsp_offset']))
             op2 = op2 = registers["rax"][op1["size"]]
         elif op2["type"] == "register":
             op2 = op2[op1["size"]]
@@ -70,10 +70,10 @@ def create_asm(instruction, op1, op2):
         else:
             exit("not supported type")
         output.append(apply_rbp_diff(op1))
-        output.append(f"{instruction} {get_variable_rbp_reference(op1)}, {op2}")
+        output.append(f"{instruction} {get_var_rbp_reference(op1)}, {op2}")
         output.append(unapply_rbp_diff(op1))
     elif op1["type"] == "register":
-        if op2["type"] == "variable_name":
+        if op2["type"] == "var_name":
             if op2["address_of"] == False:
                 output.append(apply_rbp_diff(op2))
                 if op2["size"] == 32:
@@ -91,12 +91,12 @@ def create_asm(instruction, op1, op2):
                 output.append(apply_rbp_diff(op2))
                 output.append(f"{instruction} {op1[64]}, {registers['rbp'][64]}")
                 output.append(unapply_rbp_diff(op2))
-        elif op2["type"] == "function_reference":
+        elif op2["type"] == "func_reference":
             for argument in op2["arguments"]:
                 output += argument["expression"].to_asm()["text"]
-            add_asm_line(output, "sub", "rsp", abs(op2['function_rsp_offset']))
+            add_asm_line(output, "sub", "rsp", abs(op2['func_rsp_offset']))
             output.append("call " + op2["name"])
-            add_asm_line(output, "add", "rsp", abs(op2['function_rsp_offset']))
+            add_asm_line(output, "add", "rsp", abs(op2['func_rsp_offset']))
             op2 = op2 = registers["rax"][op1["size"]]
         elif op2["type"] == "register":
             output.append(f"{instruction} {op1[64]}, {op2[64]}")
@@ -117,15 +117,15 @@ def compiler(syntax_tree, header=True):
         text += ["section .text", "global _start", "_start:", "call main", "mov rdi, rax", "mov rax, 60", "syscall"]
 
     for node in syntax_tree:
-        if node["type"] == "variable_declaration":
+        if node["type"] == "var_declaration":
             expression_asm = node["expression"].to_asm()
             text += expression_asm["text"]
-            text += create_asm(node["assignment_operator"]["asm"], node["variable"], expression_asm["value"])
-        elif node["type"] == "variable_assignment":
+            text += create_asm(node["assignment_operator"]["asm"], node["var"], expression_asm["value"])
+        elif node["type"] == "var_assignment":
             expression_asm = node["expression"].to_asm()
             text += expression_asm["text"]
-            text += create_asm(node["assignment_operator"]["asm"], node["variable"], expression_asm["value"])
-        elif node["type"] == "function_declaration":
+            text += create_asm(node["assignment_operator"]["asm"], node["var"], expression_asm["value"])
+        elif node["type"] == "func_declaration":
             text.append(node["name"] + ":")
             text.append("push rbp")
             add_asm_line(text, "mov", "rbp", "rsp")
@@ -136,19 +136,19 @@ def compiler(syntax_tree, header=True):
             add_asm_line(text, "mov", "rsp", "rbp")
             text.append("pop rbp")
             text.append("ret")
-        elif node["type"] == "function_reference":
+        elif node["type"] == "func_reference":
             for argument in node["arguments"]:
                 argument_asm = argument["expression"].to_asm()
                 text += argument_asm["text"]
-                text += create_asm("mov", argument["variable"], argument_asm["value"])
-            add_asm_line(text, "sub", "rsp", abs(node['function_rsp_offset']))
+                text += create_asm("mov", argument["var"], argument_asm["value"])
+            add_asm_line(text, "sub", "rsp", abs(node['func_rsp_offset']))
             text.append("call " + node["name"])
-            add_asm_line(text, "add", "rsp", abs(node['function_rsp_offset']))
+            add_asm_line(text, "add", "rsp", abs(node['func_rsp_offset']))
         elif node["type"] == "return":
             return_asm = node["expression"].to_asm()
             text += return_asm["text"]
             text += create_asm("mov", registers["rax"], return_asm["value"])
-            text.append(f"jmp {node['current_function_name']}_ret")
+            text.append(f"jmp {node['current_func_name']}_ret")
         elif node["type"] == "syscall": # https://stackoverflow.com/a/2538212/12834165
             for argument in node["arguments"]:
                 argument_asm = argument["expression"].to_asm()

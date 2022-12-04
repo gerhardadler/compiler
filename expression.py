@@ -114,7 +114,7 @@ class Expression:
                 text += create_asm("mov", left_register, left)
                 left = left_register
             
-            # if right["type"] == "variable_name":
+            # if right["type"] == "var_name":
             #     # unused_register = unused_registers.pop()
             #     right_register = unused_registers.pop()
             #     text += create_asm(operator["asm"], right_register["name"], right)
@@ -134,7 +134,7 @@ class Expression:
             left
         except NameError: # left isn't defined
             left = expression.pop()
-            if left["type"] == "variable_name":
+            if left["type"] == "var_name":
                 left_register = unused_registers.pop()
                 text += create_asm("mov", left_register, left)
                 left = left_register

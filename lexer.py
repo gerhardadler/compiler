@@ -1,104 +1,68 @@
-from dataclasses import dataclass
-from enum import Enum, auto
+import symbols
 
-
-class Associativity(Enum):
-    LEFT_TO_RIGHT = auto()
-    RIGHT_TO_LEFT = auto()
-
-
-class Type(Enum):
-    LOGICAL_OPERATOR = auto()
-    BITWISE_OPERATOR = auto()
-    COMPARISON_OPERATOR = auto()
-    ARITHMETIC_OPERATOR = auto()
-    ASSIGNMENT_OPERATOR = auto()
-
-
-@dataclass
-class Symbol:
-    name: str
-    type: Type
-
-
-@dataclass
-class Operator:
-    type: Type
-    name: str
-    precedence: int
-    associativity: Associativity
-    asm: str
-
-
-symbols = [
+symbols_list = [
     # logical operators
-    Operator(Type.LOGICAL_OPERATOR, "&&", 10, Associativity.LEFT_TO_RIGHT, "no"),
-    Operator(Type.LOGICAL_OPERATOR, "||", 11, Associativity.LEFT_TO_RIGHT, "no"),
+    symbols.LogicalOperator("&&", 10, "no"),
+    symbols.LogicalOperator("||", 11, "no"),
 
     # bitwise operators
-    Operator(Type.BITWISE_OPERATOR, "<<", 4, Associativity.LEFT_TO_RIGHT, "shl"),
-    Operator(Type.BITWISE_OPERATOR, ">>", 4, Associativity.LEFT_TO_RIGHT, "shr"),
-    Operator(Type.BITWISE_OPERATOR, "&", 7, Associativity.LEFT_TO_RIGHT, "and"),
-    Operator(Type.BITWISE_OPERATOR, "^", 8, Associativity.LEFT_TO_RIGHT, "xor"),
-    Operator(Type.BITWISE_OPERATOR, "|", 9, Associativity.LEFT_TO_RIGHT, "or"),
+    symbols.BitwiseOperator("<<", 4, "shl"),
+    symbols.BitwiseOperator(">>", 4, "shr"),
+    symbols.BitwiseOperator("&", 7, "and"),
+    symbols.BitwiseOperator("^", 8, "xor"),
+    symbols.BitwiseOperator("|", 9, "or"),
 
     # comparison operators
-    Operator(Type.COMPARISON_OPERATOR, "==", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
-    Operator(Type.COMPARISON_OPERATOR, "!=", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
-    Operator(Type.COMPARISON_OPERATOR, "<", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
-    Operator(Type.COMPARISON_OPERATOR, ">", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
-    Operator(Type.COMPARISON_OPERATOR, "<=", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
-    Operator(Type.COMPARISON_OPERATOR, ">=", 6, Associativity.LEFT_TO_RIGHT, "cmp"),
-    {"name": "==", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "asm": "cmp"},
-    {"name": "!=", "type": "comparison_operator", "precedence": 6, "associativity": "left_to_left", "asm": "cmp"},
-    {"name": "<", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "asm": "cmp"},
-    {"name": ">", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "asm": "cmp"},
-    {"name": "<=", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "asm": "cmp"},
-    {"name": ">=", "type": "comparison_operator", "precedence": 5, "associativity": "left_to_left", "asm": "cmp"},
+    symbols.ComparisonOperator("==", 6, "cmp"),
+    symbols.ComparisonOperator("!=", 6, "cmp"),
+    symbols.ComparisonOperator("<", 5, "cmp"),
+    symbols.ComparisonOperator(">", 5, "cmp"),
+    symbols.ComparisonOperator("<=", 5, "cmp"),
+    symbols.ComparisonOperator(">=", 5, "cmp"),
 
     # assignment operators
-    {"name": "=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mov"},
-    {"name": "+=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "add"},
-    {"name": "-=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "sub"},
-    {"name": "*=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "mul"},
-    {"name": "/=", "type": "assignment_operator", "precedence": 12, "associativity": "right_to_left", "asm": "div"},
+    symbols.AssignmentOperator("=", 12, "mov"),
+    symbols.AssignmentOperator("+=", 12, "add"),
+    symbols.AssignmentOperator("-=", 12, "sub"),
+    symbols.AssignmentOperator("*=", 12, "mul"),
+    symbols.AssignmentOperator("/=", 12, "div"),
 
     # arithmetic operators
-    {"name": "*", "type": "arithmetic_operator", "precedence": 2, "associativity": "left_to_right", "asm": "mul"},
-    {"name": "/", "type": "arithmetic_operator", "precedence": 2, "associativity": "left_to_right", "asm": "div"},
-    {"name": "+", "type": "arithmetic_operator", "precedence": 3, "associativity": "left_to_right", "asm": "add"},
-    {"name": "-", "type": "arithmetic_operator", "precedence": 3, "associativity": "left_to_right", "asm": "sub"},
+    symbols.ArithmeticOperator("*", 2, "mul"),
+    symbols.ArithmeticOperator("/", 2, "div"),
+    symbols.ArithmeticOperator("+", 3, "add"),
+    symbols.ArithmeticOperator("-", 3, "sub"),
 
     # seperators
-    {"name": ",", "type": "comma"},
-    {"name": ";", "type": "semicolon"},
+    symbols.Comma(","),
+    symbols.Semicolon(";"),
 
     # brackets
-    {"name": "(", "type": "round_bracket"},
-    {"name": ")", "type": "round_bracket"},
-    {"name": "{", "type": "curly_bracket"},
-    {"name": "}", "type": "curly_bracket"},
-    {"name": "[", "type": "bracket"},
-    {"name": "]", "type": "bracket"},
+    symbols.RoundBracket("(", symbols.Direction.LEFT),
+    symbols.RoundBracket(")", symbols.Direction.LEFT),
+    symbols.CurlyBracket("{", symbols.Direction.LEFT),
+    symbols.CurlyBracket("}", symbols.Direction.LEFT),
+    symbols.SquareBracket("[", symbols.Direction.LEFT),
+    symbols.SquareBracket("]", symbols.Direction.LEFT),
 
-    {"name": "@", "type": "address_of"}
+    symbols.AddressOf("@")
 ]
-symbols.sort(reverse=True, key=lambda symbol: len(symbol["name"])) # avoids overlapping as symbols with longer names come first
+symbols_list.sort(reverse=True, key=lambda symbol: len(symbol.name)) # avoids overlapping as symbols with longer names come first
 
 keywords = [
     # type declaration
-    {"name": "u8", "type": "type_declaration", "size": 8},
-    {"name": "u16", "type": "type_declaration", "size": 16},
-    {"name": "u32", "type": "type_declaration", "size": 32},
-    {"name": "u64", "type": "type_declaration", "size": 64},
+    symbols.UnsignedInt("u8", 8),
+    symbols.UnsignedInt("u16", 16),
+    symbols.UnsignedInt("u32", 32),
+    symbols.UnsignedInt("u64", 64),
     
-    {"name": "if", "type": "if"},
-    {"name": "elif", "type": "elif"},
+    symbols.If("if"),
+    symbols.Elif("elif"),
 
-    {"name": "def", "type": "function_declaration"},
-    {"name": "ret", "type": "return"},
+    symbols.FuncDeclaration("def"),
+    symbols.Return("ret"),
 
-    {"name": "syscall", "type": "syscall"}
+    symbols.Syscall("syscall")
 ]
 
 def is_str_number(str):
@@ -119,14 +83,14 @@ def lexer(code):
             code_index += 1
             continue
 
-        for symbol in symbols:
-            if code.startswith(symbol["name"], code_index):
+        for symbol in symbols_list:
+            if code.startswith(symbol.name, code_index):
                 output_tokens.append(symbol)
-                code_index += len(symbol["name"]) - 1 # subtracting 1, as 1 is added later.
+                code_index += len(symbol.name) - 1 # subtracting 1, as 1 is added later.
                 break
         else: # nobreak
             first_seperator_index = -1 # if there is no more seperators, -1 will be used.
-            for seperator in [dict["name"] for dict in symbols] + [" "]:
+            for seperator in [dict.name for dict in symbols_list] + [" "]:
                 seperator_index = code.find(seperator, code_index)
                 if first_seperator_index == -1 or (seperator_index < first_seperator_index and seperator_index != -1):
                     first_seperator_index = seperator_index
@@ -134,9 +98,9 @@ def lexer(code):
             current_word = code[code_index:first_seperator_index]
 
             for keyword in keywords:
-                if current_word == keyword["name"]:
+                if current_word == keyword.name:
                     output_tokens.append(keyword)
-                    code_index += len(keyword["name"]) - 1 # subtracting 1, as 1 is added later.
+                    code_index += len(keyword.name) - 1 # subtracting 1, as 1 is added later.
                     break
             else: # nobreak
                 if is_str_number(current_word):
@@ -149,12 +113,12 @@ def lexer(code):
                     if code[first_seperator_index] == "(":
                         output_tokens.append({
                         "name": current_word,
-                        "type": "function_name"
+                        "type": "func_name"
                     })
                     else:
                         output_tokens.append({
                             "name": current_word,
-                            "type": "variable_name"
+                            "type": "var_name"
                         })
                     code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
 
