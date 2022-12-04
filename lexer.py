@@ -65,9 +65,9 @@ keywords = [
     symbols.Syscall("syscall")
 ]
 
-def is_str_number(str):
+def is_str_int(str):
     try:
-        float(str)
+        int(str)
         return True
     except ValueError:
         return False
@@ -103,11 +103,8 @@ def lexer(code):
                     code_index += len(keyword.name) - 1 # subtracting 1, as 1 is added later.
                     break
             else: # nobreak
-                if is_str_number(current_word):
-                    output_tokens.append({
-                        "name": current_word,
-                        "type": "number"
-                    })
+                if is_str_int(current_word):
+                    output_tokens.append(symbols.Number(int(current_word)))
                     code_index += len(current_word) - 1 # subtracting 1, as 1 is added later.
                 else:
                     if code[first_seperator_index] == "(":

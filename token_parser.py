@@ -3,24 +3,6 @@ from dataclasses import dataclass
 from collections import UserList
 from expression import Expression
 from compiler import registers
-from type import Type
-
-
-@dataclass
-class VarType:
-    name: str
-    size: int
-    def __post_init__(self):
-        self.size_specifier = size_to_specifier(self.size)
-
-
-@dataclass
-class Var:
-    name: str
-    var_type: VarType
-    rbp_diff: int
-    address_of: bool = False
-    type: Type = Type.VAR
 
 
 @dataclass

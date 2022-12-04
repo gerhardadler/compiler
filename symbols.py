@@ -2,7 +2,7 @@ from enum import Enum, auto
 from dataclasses import dataclass
 import utils
 
-# OPERATORS
+# Operators
 
 class Associativity(Enum):
     LEFT_TO_RIGHT = auto()
@@ -76,6 +76,7 @@ class SquareBracket(Bracket):
 class VarType:
     name: str
     size: int
+
     def __post_init__(self):
         self.size_specifier = utils.size_to_specifier(self.size)
 
@@ -125,3 +126,28 @@ class Return:
 @dataclass
 class Syscall:
     name: str
+
+
+@dataclass
+class Number:
+    name: int
+
+    def __post_init__(self):
+        self.size = self.get_number_size(self.name)
+
+    def get_number_size(self, number: int) -> int:
+        for i in [8, 16, 32, 64]:
+            if number > 2 ** i:
+                return i
+        else:
+            raise Exception("Number is too big")
+
+
+@dataclass
+class Var:
+    name: str
+
+    def add_info(self, var_type: VarType, rbp_diff: int, address_of: bool = False):
+        self.var_type: VarType = var_type
+        self.rbp_diff: int = rbp_diff
+        self.address_of: bool = address_of
